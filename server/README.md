@@ -245,7 +245,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Adel Muhammed**  
 Full Stack + AI Engineer
 
-📧 Email: your-email@example.com  
+📧 Email: adelmuhammed786@gmail.com 
 🔗 LinkedIn: https://www.linkedin.com/in/adel-muhammed-49136a282/ 
 💼 GitHub: https://github.com/dragon486
 
