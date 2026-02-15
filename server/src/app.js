@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes.js";
 import { protect } from "./middlewares/authMiddleware.js";
 import businessRoutes from "./routes/business.routes.js";
 import leadRoutes from "./routes/lead.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 
 
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/leads", leadRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.get("/api/private", protect, (req, res) => {
     res.json({

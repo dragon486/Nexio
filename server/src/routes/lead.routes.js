@@ -3,18 +3,21 @@ import { protect } from "../middlewares/authMiddleware.js";
 import {
     createLead,
     getLeads,
-    captureLead
+    captureLead,
+    getLead,
+    generateFollowup
 } from "../controllers/lead.controller.js";
+import { verifyApiKey } from "../middlewares/apiKeyMiddleware.js";
 
 const router = express.Router();
 
-// PUBLIC → websites, bots, landing pages
-router.post("/capture", captureLead);
+// PUBLIC → websites, bots, landing pages (SECURE)
+router.post("/capture", verifyApiKey, captureLead);
 
 // PRIVATE → dashboard
 router.post("/", protect, createLead);
 router.get("/", protect, getLeads);
-
-router.post("/capture", captureLead);
+router.get("/:id", protect, getLead);
+router.post("/:id/generate-followup", protect, generateFollowup);
 
 export default router;

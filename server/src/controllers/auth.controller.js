@@ -1,6 +1,8 @@
 import User from "../models/User.js";
+import Business from "../models/Business.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 export const register = async (req, res) => {
     try {
@@ -15,6 +17,13 @@ export const register = async (req, res) => {
             name,
             email,
             password: hashed,
+        });
+
+        const apiKey = crypto.randomBytes(24).toString("hex");
+        const business = await Business.create({
+            name: `${name}'s Business`,
+            owner: user._id,
+            apiKey
         });
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -48,7 +57,9 @@ export const login = async (req, res) => {
         const safeUser = { ...user._doc };
         delete safeUser.password;
 
-        res.json({ token, user: safeUser });
+        const business = await Business.findOne({ owner: user._id });
+
+        res.json({ token, user: safeUser, business });
 
     } catch (error) {
         res.status(500).json({ error: error.message });
