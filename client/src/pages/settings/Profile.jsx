@@ -7,6 +7,7 @@ import { getUser } from '../../services/authService';
 const Profile = () => {
     const [user, setUser] = useState({ name: '', email: '' });
     const [loading, setLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         const u = getUser();
@@ -19,6 +20,8 @@ const Profile = () => {
         // Simulate API Update
         setTimeout(() => {
             setLoading(false);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
             // In real app, call update user API here
         }, 1000);
     };
@@ -84,8 +87,8 @@ const Profile = () => {
                     </div>
 
                     <div className="pt-4">
-                        <Button variant="primary" type="submit" disabled={loading}>
-                            {loading ? 'Saving...' : 'Save Changes'}
+                        <Button variant={showSuccess ? "outline" : "primary"} type="submit" disabled={loading}>
+                            {loading ? 'Saving...' : showSuccess ? 'Saved! ✅' : 'Save Changes'}
                         </Button>
                     </div>
                 </form>

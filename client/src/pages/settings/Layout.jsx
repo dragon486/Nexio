@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { User, Building, Cpu, CreditCard, Users, ChevronRight } from 'lucide-react';
+import { User, Building, Cpu, CreditCard, Users, ChevronRight, Zap } from 'lucide-react';
 import { cn } from '../../lib/utils'; // Adjust based on actual path
 import GlassCard from '../../components/ui/GlassCard';
 
@@ -9,6 +9,7 @@ const SettingsLayout = () => {
         { icon: User, label: 'My Profile', path: '/dashboard/settings/profile' },
         { icon: Building, label: 'Business Profile', path: '/dashboard/settings/business' },
         { icon: Cpu, label: 'Automations', path: '/dashboard/settings/automations' },
+        { icon: Zap, label: 'Integrations', path: '/dashboard/settings/integrations' },
         { icon: Users, label: 'Team Members', path: '/dashboard/settings/team', disabled: true },
         { icon: CreditCard, label: 'Billing & Usage', path: '/dashboard/settings/billing', disabled: true },
     ];

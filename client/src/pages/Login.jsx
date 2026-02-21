@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import GlassCard from '../components/ui/GlassCard';
 import Button from '../components/ui/Button';
-import { login } from '../services/authService';
+import { login, googleLogin } from '../services/authService';
 import { Lock, Mail } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -26,19 +27,18 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="min-h-screen bg-black flex items-center justify-center p-4">
             {/* Background Gradients */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[150px] rounded-full" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[150px] rounded-full" />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/[0.03] blur-[150px] rounded-full" />
             </div>
 
             <GlassCard className="w-full max-w-md relative z-10 p-8">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+                    <h1 className="text-4xl font-black text-white italic drop-shadow-glow tracking-tighter mb-2">
                         Arlo.ai
                     </h1>
-                    <p className="text-gray-400">Sign in to your business dashboard</p>
+                    <p className="text-[10px] text-muted font-black uppercase tracking-widest">Sign in to your business cockpit</p>
                 </div>
 
                 {error && (
@@ -81,9 +81,43 @@ const Login = () => {
                     </Button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-gray-500">
-                    <p>Don't have an account? <Link to="/register" className="text-primary hover:text-primary/80 transition-colors">Sign Up</Link></p>
-                    <p className="mt-2 text-xs">Demo: demo@arlo.ai / demo</p>
+                <div className="mt-4">
+                    <div className="relative mb-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-white/10"></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-black px-2 text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center">
+                        <GoogleLogin
+                            onSuccess={async (credentialResponse) => {
+                                try {
+                                    const data = await googleLogin(credentialResponse.credential);
+                                    if (data.business && !data.business.onboardingCompleted) {
+                                        navigate('/onboarding');
+                                    } else {
+                                        navigate('/dashboard');
+                                    }
+                                } catch (err) {
+                                    setError('Google Login Failed');
+                                }
+                            }}
+                            onError={() => {
+                                setError('Google Login Failed');
+                            }}
+                            theme="filled_black"
+                            shape="pill"
+                            width="100%"
+                        />
+                    </div>
+                </div>
+
+                <div className="mt-6 text-center text-[10px] text-muted font-black uppercase tracking-widest space-y-2">
+                    <p>Don't have an account? <Link to="/register" className="text-white hover:text-zinc-300 transition-colors underline underline-offset-4">Sign Up</Link></p>
+                    <p className="opacity-50 tracking-[0.2em] pt-2">Demo: demo@arlo.ai / demo</p>
                 </div>
             </GlassCard>
         </div>

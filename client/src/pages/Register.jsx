@@ -31,19 +31,18 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="min-h-screen bg-black flex items-center justify-center p-4">
             {/* Background Gradients */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[150px] rounded-full" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[150px] rounded-full" />
+                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-white/[0.03] blur-[150px] rounded-full" />
             </div>
 
             <GlassCard className="w-full max-w-md relative z-10 p-8">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+                    <h1 className="text-4xl font-black text-white italic drop-shadow-glow tracking-tighter mb-2">
                         Arlo.ai
                     </h1>
-                    <p className="text-gray-400">Create your business account</p>
+                    <p className="text-[10px] text-muted font-black uppercase tracking-widest">Create your business cockpit</p>
                 </div>
 
                 {error && (
@@ -103,8 +102,8 @@ const Register = () => {
                     </Button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-gray-500">
-                    <p>Already have an account? <Link to="/login" className="text-primary hover:text-primary/80 transition-colors">Sign In</Link></p>
+                <div className="mt-6 text-center text-[10px] text-muted font-black uppercase tracking-widest">
+                    <p>Already have an account? <Link to="/login" className="text-white hover:text-zinc-300 transition-colors underline underline-offset-4">Sign In</Link></p>
                 </div>
             </GlassCard>
         </div>

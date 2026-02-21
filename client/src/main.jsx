@@ -31,10 +31,17 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+// NOTE: Replace with your actual Google Client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </GoogleOAuthProvider>
   </StrictMode>,
 )

@@ -1,194 +1,175 @@
 import React, { useEffect, useState } from 'react';
-import GlassCard from '../components/ui/GlassCard';
 import { getAnalytics } from '../services/analyticsService';
-import { Activity, Users, DollarSign, Zap, TrendingUp, BarChart3 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, AreaChart, Area } from 'recharts';
-import LeadFeed from '../components/LeadFeed';
+import {
+    DollarSign, Users, Zap, TrendingUp,
+    ArrowRight, Activity, Calendar
+} from 'lucide-react';
+import KPICard from '../components/dashboard/KPICard';
+import FunnelChart from '../components/dashboard/FunnelChart';
+import RevenueChart from '../components/dashboard/RevenueChart';
+import AIPerformance from '../components/dashboard/AIPerformance';
+import LeadFeed from '../components/dashboard/LeadFeed';
 import { getUser } from '../services/authService';
+import { initSocket, subscribeToAnalytics, unsubscribeFromAnalytics } from '../services/socketService';
 
 const Dashboard = () => {
-    const [stats, setStats] = useState(null);
+    const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [timeRange, setTimeRange] = useState('7d'); // Global time range
     const user = getUser();
 
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'Good morning';
-        if (hour < 18) return 'Good afternoon';
-        return 'Good evening';
+    // Initialize Socket
+    useEffect(() => {
+        if (user?.business?._id) {
+            initSocket(user.business._id);
+        }
+    }, [user?.business?._id]);
+
+    const fetchAnalytics = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
+        try {
+            const data = await getAnalytics(timeRange);
+            setAnalytics(data);
+        } catch (error) {
+            console.error("Failed to fetch analytics", error);
+        } finally {
+            if (showLoading) setLoading(false);
+        }
     };
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const data = await getAnalytics();
-                setStats(data);
-            } catch (error) {
-                console.error("Failed to fetch analytics", error);
-            } finally {
-                setLoading(false);
-            }
+        fetchAnalytics();
+
+        const handleAnalyticsUpdate = () => {
+            console.log("📈 Analytics update received via Socket");
+            fetchAnalytics(false); // Update in background
         };
 
-        fetchStats();
-    }, []);
+        subscribeToAnalytics(handleAnalyticsUpdate);
+        return () => unsubscribeFromAnalytics(handleAnalyticsUpdate);
+    }, [timeRange]); // Refetch when timeRange changes
 
-    if (loading) return <div className="p-8 text-white">Loading dashboard...</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="relative w-16 h-16">
+                <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-purple/20 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-purple rounded-full animate-spin border-t-transparent"></div>
+            </div>
+        </div>
+    );
 
-    const funnelData = stats?.funnel ? Object.keys(stats.funnel).map(key => ({
+    // Prepare chart data
+    const funnelChartData = analytics?.funnel ? Object.keys(analytics.funnel).map(key => ({
         name: key.charAt(0).toUpperCase() + key.slice(1),
-        count: stats.funnel[key]
+        value: analytics.funnel[key]
     })) : [];
-
-    const priorityData = [
-        { name: 'High', value: stats?.aiPerformance?.highPriority || 0, color: '#10B981' }, // Green
-        { name: 'Medium', value: stats?.aiPerformance?.midPriority || 0, color: '#F59E0B' }, // Yellow
-        { name: 'Low', value: stats?.aiPerformance?.lowPriority || 0, color: '#6B7280' }, // Gray
-    ];
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0);
     };
 
-    // Calculate Funnel Drop-offs
-    const getConversion = (stage1, stage2) => {
-        const c1 = stats?.funnel?.[stage1] || 0;
-        const c2 = stats?.funnel?.[stage2] || 0;
-        if (c1 === 0) return 0;
-        return Math.round((c2 / c1) * 100);
-    };
-
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-white">Overview</h1>
-                <p className="text-gray-400">Welcome back! Here's your business performance.</p>
+        <div className="space-y-8 pb-10">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-end gap-4 p-1">
+                <div>
+                    <h1 className="text-4xl font-black text-white tracking-tighter mb-2">
+                        CEO <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-brand-blue">Cockpit</span>
+                    </h1>
+                    <p className="text-muted font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Live Business Intelligence for <span className="text-white font-bold">{user?.business?.name || 'Arlo'}</span>
+                    </p>
+                </div>
+                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5 backdrop-blur-md relative z-50">
+                    {['Today', '7D', '30D'].map((range) => (
+                        <button
+                            key={range}
+                            onClick={() => setTimeRange(range)}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${timeRange === range
+                                ? 'bg-surface-highlight text-white shadow-inner-white'
+                                : 'text-muted hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            {range}
+                        </button>
+                    ))}
+                    <div className="w-px h-6 bg-white/10 mx-1" />
+                    <button
+                        className="p-2 text-muted hover:text-white transition-colors relative group"
+                        title="Custom Range"
+                    >
+                        <Calendar size={16} />
+                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/10">Custom</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Money & Speed KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <GlassCard className="p-6 flex flex-col justify-between relative overflow-hidden group">
-                    <div className="absolute right-[-20px] top-[-20px] bg-green-500/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all duration-500" />
-                    <div className="flex items-center gap-4 mb-2 relative z-10">
-                        <div className="p-3 bg-green-500/20 rounded-xl text-green-400">
-                            <DollarSign size={24} />
-                        </div>
-                        <div>
-                            <span className="text-gray-400 text-sm font-medium">Pipeline Value</span>
-                            <div className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded mt-1 w-fit">
-                                <TrendingUp size={10} /> +12% this week
-                            </div>
-                        </div>
-                    </div>
-                    <div className="relative z-10 mt-2">
-                        <h2 className="text-3xl font-bold text-white">{formatCurrency(stats?.stats?.potentialRevenue)}</h2>
-                    </div>
-                </GlassCard>
-
-                <GlassCard className="p-6 flex flex-col justify-between relative overflow-hidden group">
-                    <div className="absolute right-[-20px] top-[-20px] bg-purple-500/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all duration-500" />
-                    <div className="flex items-center gap-4 mb-2 relative z-10">
-                        <div className="p-3 bg-purple-500/20 rounded-xl text-purple-400">
-                            <Zap size={24} />
-                        </div>
-                        <div>
-                            <span className="text-gray-400 text-sm font-medium">AI Workload</span>
-                            <div className="flex items-center gap-1 text-xs text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded mt-1 w-fit">
-                                <TrendingUp size={10} /> +5% today
-                            </div>
-                        </div>
-                    </div>
-                    <div className="relative z-10 mt-2">
-                        <h2 className="text-3xl font-bold text-white">{stats?.stats?.aiActions || 0}</h2>
-                    </div>
-                </GlassCard>
-
-                <GlassCard className="p-6 flex flex-col justify-between">
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="p-3 bg-blue-500/20 rounded-xl text-blue-400">
-                            <Users size={24} />
-                        </div>
-                        <span className="text-gray-400 text-sm font-medium">Total Leads</span>
-                    </div>
-                    <h2 className="text-3xl font-bold text-white">{stats?.aiPerformance?.totalLeads || 0}</h2>
-                </GlassCard>
-
-                <GlassCard className="p-6 flex flex-col justify-between">
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
-                            <Activity size={24} />
-                        </div>
-                        <span className="text-gray-400 text-sm font-medium">Avg Score</span>
-                    </div>
-                    <div className="flex items-end gap-2">
-                        <h2 className="text-3xl font-bold text-white">{Math.round(stats?.aiPerformance?.avgScore || 0)}</h2>
-                        <span className="text-gray-500 mb-1">/ 100</span>
-                    </div>
-                </GlassCard>
+            {/* KPI Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <KPICard
+                    title="Pipeline Value"
+                    value={formatCurrency(analytics?.potentialRevenue)}
+                    icon={DollarSign}
+                    color="purple"
+                    delay={0}
+                    description="Total potential revenue from all active qualified leads."
+                />
+                <KPICard
+                    title="Total Leads"
+                    value={analytics?.aiPerformance?.totalLeads}
+                    icon={Users}
+                    color="blue"
+                    delay={1}
+                    description="Total number of leads captured in the current period."
+                />
+                <KPICard
+                    title="Revenue"
+                    value={formatCurrency(analytics?.generatedRevenue)}
+                    icon={Activity}
+                    color="green"
+                    delay={2}
+                    description="Actual revenue closed and collected this month."
+                />
+                <KPICard
+                    title="AI Actions (24h)"
+                    value={analytics?.aiActions}
+                    icon={Zap}
+                    color="pink"
+                    delay={3}
+                    description="Total autonomous actions (emails, SMS) performed by AI today."
+                />
+                <KPICard
+                    title="Time Saved"
+                    value={`${analytics?.timeSaved || 0}h`}
+                    icon={TrendingUp}
+                    subtext={analytics?.timeSaved > 0 ? `Equivalent to ${Math.round(analytics.timeSaved / 40)} FTEs` : "Start automating leads"}
+                    delay={4}
+                    description="Estimated hours saved by AI automation vs manual work."
+                />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main: Lead Funnel */}
-                <GlassCard className="lg:col-span-2 p-6 min-h-[400px]">
-                    <div className="flex justify-between items-start mb-6">
-                        <h3 className="text-xl font-bold text-white">Lead Funnel</h3>
-                        <div className="flex gap-4 text-xs">
-                            <div className="text-gray-400">New → Contacted: <span className="text-white font-bold">{getConversion('new', 'contacted')}%</span></div>
-                            <div className="text-gray-400">Contacted → Qualified: <span className="text-white font-bold">{getConversion('contacted', 'qualified')}%</span></div>
-                            <div className="text-gray-400">Qualified → Converted: <span className="text-white font-bold">{getConversion('qualified', 'converted')}%</span></div>
-                        </div>
-                    </div>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={funnelData}>
-                                <defs>
-                                    <linearGradient id="colorFunnel" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="name"
-                                    stroke="#525252"
-                                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                                    axisLine={false}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    stroke="#525252"
-                                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                                    axisLine={false}
-                                    tickLine={false}
-                                />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#0A0A0A', borderColor: '#333', borderRadius: '12px' }}
-                                    itemStyle={{ color: '#fff' }}
-                                    cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '4 4' }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="count"
-                                    stroke="#3B82F6"
-                                    strokeWidth={3}
-                                    fillOpacity={1}
-                                    fill="url(#colorFunnel)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </GlassCard>
+            {/* Main Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[400px]">
+                {/* Visual Funnel - Leans visual */}
+                <div className="lg:col-span-4 h-full">
+                    <FunnelChart data={funnelChartData} />
+                </div>
 
-                {/* Side: Real-time Feed */}
-                <GlassCard className="p-0 overflow-hidden flex flex-col h-[400px]">
-                    <div className="p-6 border-b border-white/5 bg-white/5">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Activity size={20} className="text-green-400 animate-pulse" /> Live Feed
-                        </h3>
-                    </div>
-                    <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-                        <LeadFeed leads={stats?.recentLeads} />
-                    </div>
-                </GlassCard>
+                {/* Revenue & Growth - Interactive */}
+                <div className="lg:col-span-8 h-full">
+                    <RevenueChart data={analytics?.revenueHistory} />
+                </div>
+            </div>
+
+            {/* Bottom Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[350px]">
+                <div className="lg:col-span-5 h-full">
+                    <AIPerformance data={{ ...analytics?.aiPerformance, resilienceLeads: analytics?.resilienceLeads }} />
+                </div>
+                <div className="lg:col-span-7 h-full">
+                    <LeadFeed leads={analytics?.recentLeads} />
+                </div>
             </div>
         </div>
     );

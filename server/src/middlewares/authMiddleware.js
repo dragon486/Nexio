@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Business from "../models/Business.js";
 
 export const protect = async (req, res, next) => {
     let token;
@@ -14,6 +15,13 @@ export const protect = async (req, res, next) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
             req.user = await User.findById(decoded.id).select("-password");
+
+            // Attach Business ID to User object for convenience in controllers
+            const business = await Business.findOne({ owner: req.user._id });
+            if (business) {
+                req.user.businessId = business._id;
+                req.business = business;
+            }
 
             next();
         } catch (error) {

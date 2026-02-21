@@ -15,6 +15,14 @@ const leadSchema = new mongoose.Schema(
             enum: ["new", "contacted", "qualified", "converted", "lost"],
             default: "new",
         },
+        isAutoPilotContacted: {
+            type: Boolean,
+            default: false,
+        },
+        read: {
+            type: Boolean,
+            default: false,
+        },
         aiScore: {
             type: Number,
             default: 0,
@@ -30,6 +38,8 @@ const leadSchema = new mongoose.Schema(
             ref: "Business",
             required: true,
         },
+        gmailThreadId: String,
+        lastEmailReceivedAt: Date,
         meta: Object,
         aiResponse: {
             whatsapp: String,

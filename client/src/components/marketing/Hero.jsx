@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
+import DashboardPreview from './DashboardPreview';
 
 const Hero = () => {
     return (

@@ -5,7 +5,10 @@ import {
     getLeads,
     captureLead,
     getLead,
-    generateFollowup
+    generateFollowup,
+    sendMessage,
+    markAsRead,
+    markAllAsRead
 } from "../controllers/lead.controller.js";
 import { verifyApiKey } from "../middlewares/apiKeyMiddleware.js";
 
@@ -18,6 +21,10 @@ router.post("/capture", verifyApiKey, captureLead);
 router.post("/", protect, createLead);
 router.get("/", protect, getLeads);
 router.get("/:id", protect, getLead);
+router.patch("/all/read", protect, markAllAsRead);
+router.patch("/:id/read", protect, markAsRead);
 router.post("/:id/generate-followup", protect, generateFollowup);
+router.post("/:id/message", protect, sendMessage);
+
 
 export default router;

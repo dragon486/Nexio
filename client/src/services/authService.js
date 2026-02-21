@@ -17,6 +17,19 @@ export const login = async (email, password) => {
         const response = await api.post('/auth/login', { email, password });
         if (response.data.token) {
             localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user)); // Consistent with googleLogin
+        }
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const googleLogin = async (token) => {
+    try {
+        const response = await api.post('/auth/google', { token });
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
         }
         return response.data;

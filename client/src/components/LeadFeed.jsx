@@ -22,7 +22,7 @@ const LeadFeed = ({ leads }) => {
             {leads.map((lead, index) => (
                 <motion.div
                     key={lead._id}
-                    onClick={() => navigate(`/leads/${lead._id}`)}
+                    onClick={() => navigate(`/dashboard/leads/${lead._id}`)}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -42,6 +42,11 @@ const LeadFeed = ({ leads }) => {
                                     {formatDistanceToNow(new Date(lead.createdAt), { addSuffix: true })}
                                 </span>
                             </div>
+                            {lead.message && (
+                                <p className="text-xs text-gray-500 mt-2 line-clamp-1 italic group-hover:text-gray-300 transition-colors">
+                                    "{lead.message}"
+                                </p>
+                            )}
                         </div>
                     </div>
 

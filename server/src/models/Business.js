@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const businessSchema = new mongoose.Schema(
     {
@@ -24,7 +25,7 @@ const businessSchema = new mongoose.Schema(
         apiKey: {
             type: String,
             unique: true,
-            required: true,
+            default: () => crypto.randomBytes(24).toString("hex")
         },
         aiCredits: {
             type: Number,
@@ -55,11 +56,16 @@ const businessSchema = new mongoose.Schema(
             minScoreToAutoReply: { type: Number, default: 50 },
             responseDelay: { type: Number, default: 2 }, // minutes
             dailyEmailLimit: { type: Number, default: 50 },
-            autoReply: { type: Boolean, default: false },
+            emailsSentToday: { type: Number, default: 0 },
+            lastEmailReset: { type: Date, default: Date.now },
             workingHours: {
                 start: { type: String, default: "09:00" },
                 end: { type: String, default: "18:00" },
             },
+            applyWorkingHours: { type: Boolean, default: false },
+            schedulingLink: { type: String, default: "" },
+            businessPhone: { type: String, default: "" },
+            availabilityInstructions: { type: String, default: "" },
         },
     },
     { timestamps: true }

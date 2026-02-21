@@ -3,9 +3,9 @@ import { cn } from '../../lib/utils';
 
 const Button = ({ children, variant = 'primary', className, ...props }) => {
     const variants = {
-        primary: "bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 shadow-lg shadow-primary/20",
-        secondary: "bg-surface border border-white/10 text-white hover:bg-white/5",
-        ghost: "bg-transparent hover:bg-white/5 text-gray-300 hover:text-white",
+        primary: "bg-white text-black hover:bg-zinc-200 shadow-glow font-black uppercase tracking-widest",
+        secondary: "bg-white/5 border border-white/10 text-white hover:bg-white/10",
+        ghost: "bg-transparent hover:bg-white/5 text-muted hover:text-white",
     };
 
     return (

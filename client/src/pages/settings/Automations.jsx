@@ -12,15 +12,20 @@ const Automations = () => {
     const [business, setBusiness] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     // Local state for form to allow instant UI updates
     const [settings, setSettings] = useState({
         autoReply: false,
+        applyWorkingHours: false,
         minScoreToAutoReply: 50,
         responseDelay: 5,
         dailyEmailLimit: 50,
         tone: 'professional',
-        followupStyle: 'soft'
+        followupStyle: 'soft',
+        schedulingLink: '',
+        availabilityInstructions: '',
+        workingHours: { start: '09:00', end: '18:00' }
     });
 
     useEffect(() => {
@@ -45,6 +50,8 @@ const Automations = () => {
         setSaving(true);
         try {
             await updateBusiness(business._id, { settings });
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
             // Optionally show success toast
         } catch (error) {
             console.error("Failed to save", error);
@@ -74,8 +81,8 @@ const Automations = () => {
                     </h1>
                     <p className="text-gray-400">Configure your AI's behavior and safety limits.</p>
                 </div>
-                <Button variant="primary" onClick={handleSave} disabled={saving}>
-                    {saving ? <><Save size={18} className="animate-spin mr-2" /> Saving...</> : <><Save size={18} className="mr-2" /> Save Changes</>}
+                <Button variant={showSuccess ? "outline" : "primary"} onClick={handleSave} disabled={saving}>
+                    {saving ? <><Save size={18} className="animate-spin mr-2" /> Saving...</> : showSuccess ? 'Saved! ✅' : <><Save size={18} className="mr-2" /> Save Changes</>}
                 </Button>
             </div>
 
@@ -190,6 +197,103 @@ const Automations = () => {
                     </div>
                 </GlassCard>
             </div>
+
+            {/* 3. Scheduling & Availability */}
+            <GlassCard>
+                <div className="flex items-center gap-2 mb-6">
+                    <Clock className="text-blue-400" />
+                    <h2 className="text-xl font-bold text-white">Scheduling & Availability</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                <Zap size={14} className="text-yellow-400" /> Booking Link
+                            </label>
+                            <input
+                                type="url"
+                                placeholder="https://calendly.com/your-name"
+                                value={settings.schedulingLink || ''}
+                                onChange={(e) => handleChange('schedulingLink', e.target.value)}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                            />
+                            <p className="text-xs text-gray-500 mt-2">The AI will use this link to schedule demos for high-intent leads.</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">Business Contact Number</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. +1 (555) 0123"
+                                value={settings.businessPhone || ''}
+                                onChange={(e) => handleChange('businessPhone', e.target.value)}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                            />
+                            <p className="text-xs text-gray-500 mt-2">AI will use this for "Call me" requests or WhatsApp follow-ups.</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">Availability Instructions</label>
+                            <textarea
+                                placeholder="E.g. No demos on Monday mornings. Focus on afternoon slots."
+                                value={settings.availabilityInstructions || ''}
+                                onChange={(e) => handleChange('availabilityInstructions', e.target.value)}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors h-24 resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4">
+                            <h4 className="text-sm font-bold text-primary mb-2 flex items-center gap-2">
+                                <Bot size={16} /> AI Preview
+                            </h4>
+                            <div className="bg-black/30 rounded-lg p-3 text-xs text-gray-300 italic leading-relaxed">
+                                {settings.schedulingLink ? (
+                                    `"I'd love to show you a demo of our platform! You can book a time that suits you best using our calendar here: ${settings.schedulingLink}"`
+                                ) : (
+                                    `"I'd love to show you a demo of our platform! When would be a good time for us to connect this week?"`
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10">
+                            <div className="flex items-center gap-3">
+                                <Clock className="text-gray-400" size={20} />
+                                <div>
+                                    <div className="text-sm font-bold text-white">Apply Working Hours</div>
+                                    <div className="text-xs text-gray-500">Only send automated emails during these hours</div>
+                                    <div className="flex gap-3 mt-2">
+                                        <div className="flex-1">
+                                            <input
+                                                type="time"
+                                                value={settings.workingHours?.start || '09:00'}
+                                                onChange={(e) => handleChange('workingHours', { ...settings.workingHours, start: e.target.value })}
+                                                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-primary outline-none"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <input
+                                                type="time"
+                                                value={settings.workingHours?.end || '18:00'}
+                                                onChange={(e) => handleChange('workingHours', { ...settings.workingHours, end: e.target.value })}
+                                                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-primary outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => handleChange('applyWorkingHours', !settings.applyWorkingHours)}
+                                className={`transition-colors duration-300 ${settings.applyWorkingHours ? 'text-green-400' : 'text-gray-600'}`}
+                            >
+                                {settings.applyWorkingHours ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </GlassCard>
         </div>
     );
 };

@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Onboarding from './pages/Onboarding';
 import LeadDetail from './pages/LeadDetail';
 // Settings Pages
@@ -14,6 +16,8 @@ import SettingsLayout from './pages/settings/Layout';
 import Profile from './pages/settings/Profile';
 import BusinessProfile from './pages/settings/Business';
 import Automations from './pages/settings/Automations';
+import Integrations from './pages/settings/Integrations';
+import Billing from './pages/settings/Billing';
 // Marketing Pages
 import Home from './pages/marketing/Home';
 import Demo from './pages/marketing/Demo';
@@ -69,6 +73,8 @@ const App = () => {
             <Route path="profile" element={<Profile />} />
             <Route path="business" element={<BusinessProfile />} />
             <Route path="automations" element={<Automations />} />
+            <Route path="integrations" element={<Integrations />} />
+            <Route path="billing" element={<Billing />} />
           </Route>
         </Route>
 

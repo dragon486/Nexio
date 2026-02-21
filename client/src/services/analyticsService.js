@@ -1,18 +1,15 @@
 import api from './api';
 
-export const getAnalytics = async () => {
+export const getAnalytics = async (timeRange = '7d') => {
 
     // For now, return mock data if API fails or no token, to show UI 
     // (Developer experience: dashboard shouldn't be blank while building)
     try {
-        const response = await api.get('/analytics');
+        const response = await api.get('/analytics', { params: { timeRange } });
         return response.data;
     } catch (error) {
-        console.warn("Analytics fetch failed, using mock data:", error);
-        return {
-            funnel: { new: 15, contacted: 8, qualified: 5, converted: 2, lost: 3 },
-            aiPerformance: { avgScore: 72, highPriority: 5, midPriority: 8, lowPriority: 10 },
-            conversionRate: 12.5
-        };
+        console.warn("Analytics fetch failed:", error);
+        // Return null or empty structure so UI handles "No Data" gracefully
+        return null;
     }
 };

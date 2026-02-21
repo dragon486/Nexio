@@ -13,12 +13,26 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
+            // Password is required only if googleId is not present
+            required: function () { return !this.googleId; }
         },
+        googleId: {
+            type: String,
+            unique: true,
+            sparse: true
+        },
+        avatar: String,
         plan: {
             type: String,
             default: "free",
         },
+        resetPasswordToken: String,
+        resetPasswordExpires: Date,
+        // Gmail OAuth Tokens
+        gmailAccessToken: String,
+        gmailRefreshToken: String,
+        gmailTokenExpiry: Date,
+        gmailEmail: String, // The actual email address associated with the tokens
     },
     { timestamps: true }
 );

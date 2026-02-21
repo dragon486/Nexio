@@ -1,16 +1,16 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv"; // Keep dotenv as it was in the original and is generally useful
+import dotenv from "dotenv";
+dotenv.config(); // Keep dotenv config as it was in the original
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import { protect } from "./middlewares/authMiddleware.js";
 import businessRoutes from "./routes/business.routes.js";
 import leadRoutes from "./routes/lead.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 
-
-dotenv.config(); // Keep dotenv config as it was in the original
 
 const app = express();
 
@@ -30,6 +30,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/leads", leadRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/api/private", protect, (req, res) => {
     res.json({

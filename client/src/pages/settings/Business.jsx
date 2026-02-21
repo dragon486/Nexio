@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GlassCard from '../../components/ui/GlassCard';
 import Button from '../../components/ui/Button';
-import { Building, Globe, MapPin, Save, Briefcase } from 'lucide-react';
+import { Building, Globe, MapPin, Save, Briefcase, Zap, ChevronRight } from 'lucide-react';
 import { getMyBusiness, updateBusiness } from '../../services/businessService';
 
 const BusinessProfile = () => {
+    const navigate = useNavigate();
     const [business, setBusiness] = useState({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -29,6 +32,8 @@ const BusinessProfile = () => {
         setSaving(true);
         try {
             await updateBusiness(business._id, business);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
         } catch (error) {
             console.error(error);
         } finally {
@@ -110,11 +115,25 @@ const BusinessProfile = () => {
                     </div>
 
                     <div className="pt-4 border-t border-white/5 flex justify-end">
-                        <Button variant="primary" type="submit" disabled={saving}>
-                            {saving ? <><Save size={16} className="animate-spin mr-2" /> Saving...</> : <><Save size={16} className="mr-2" /> Save Changes</>}
+                        <Button variant={showSuccess ? "outline" : "primary"} type="submit" disabled={saving}>
+                            {saving ? <><Save size={16} className="animate-spin mr-2" /> Saving...</> : showSuccess ? 'Saved! ✅' : <><Save size={16} className="mr-2" /> Save Changes</>}
                         </Button>
                     </div>
                 </form>
+            </GlassCard>
+
+            <GlassCard>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                            <Zap size={18} className="text-yellow-400" /> API & Integrations
+                        </h3>
+                        <p className="text-sm text-gray-400">Manage your API keys and lead capture snippets in our dedicated hub.</p>
+                    </div>
+                    <Button variant="outline" onClick={() => navigate('/dashboard/settings/integrations')}>
+                        Manage Integrations <ChevronRight size={16} className="ml-2" />
+                    </Button>
+                </div>
             </GlassCard>
 
             <GlassCard className="border-red-500/20">
