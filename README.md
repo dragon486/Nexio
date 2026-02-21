@@ -2,21 +2,21 @@
 
 Arlo.ai is a professional SaaS platform designed to capture, score, and automate lead follow-ups using advanced AI. Built with a "Pure Monochrome Black" aesthetic, it provides a premium, high-density dashboard for sales teams.
 
-![Dashboard Overview](/Users/adelmuhammed/.gemini/antigravity/brain/d4131d96-89b5-46f8-a23a-819deba3593e/dashboard_main_1771504480678.png)
+![Dashboard Overview](docs/dashboard_main.png)
 
 ## ✨ Platform Showcase
 
 | CEO Cockpit (Dashboard) | leads Central |
 | :--- | :--- |
-| ![Dashboard](/Users/adelmuhammed/.gemini/antigravity/brain/d4131d96-89b5-46f8-a23a-819deba3593e/dashboard_main_1771504480678.png) | ![Leads](/Users/adelmuhammed/.gemini/antigravity/brain/d4131d96-89b5-46f8-a23a-819deba3593e/dashboard_leads_1771504496872.png) |
+| ![Dashboard](docs/dashboard_main.png) | ![Leads](docs/dashboard_leads.png) |
 
 | AI Lead Intelligence | Automations Center |
 | :--- | :--- |
-| ![Lead Detail](/Users/adelmuhammed/.gemini/antigravity/brain/d4131d96-89b5-46f8-a23a-819deba3593e/lead_detail_1771504516505.png) | ![Settings](/Users/adelmuhammed/.gemini/antigravity/brain/d4131d96-89b5-46f8-a23a-819deba3593e/settings_automations_1771504539026.png) |
+| ![Lead Detail](docs/lead_detail.png) | ![Settings](docs/settings_automations.png) |
 
 | Real-time Alerts | Premium Aesthetics |
 | :--- | :--- |
-| ![Notifications](/Users/adelmuhammed/.gemini/antigravity/brain/d4131d96-89b5-46f8-a23a-819deba3593e/notifications_dropdown_1771504554402.png) | Pure Monochrome Black theme with neon accents and high-density data visualizations. |
+| ![Notifications](docs/notifications_dropdown.png) | Pure Monochrome Black theme with neon accents and high-density data visualizations. |
 
 ## 🚀 Key Features
 
