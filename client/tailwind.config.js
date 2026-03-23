@@ -7,21 +7,21 @@ export default {
     theme: {
         extend: {
             colors: {
-                'primary': '#FFFFFF',
-                'primary-bright': '#F8F8F8',
-                'background': '#050505', // Deep black
-                'surface': '#0A0A0A',
-                'surface-soft': '#121212',
-                'surface-border': '#1F1F1F',
-                'surface-highlight': '#2A2A2A',
-                'muted': '#666666',
-                'accent': '#FFFFFF',
-                'brand-purple': '#8B5CF6',
-                'brand-blue': '#3B82F6',
-                'brand-pink': '#EC4899',
+                'primary': '#1d1d1f',
+                'secondary': '#6e6e73',
+                'nexio-blue': '#3b82f6',
+                'nexio-gray': '#6e6e73',
+                'nexio-light-gray': '#86868b',
+                'background': '#f5f5f7',
+                'surface': '#ffffff',
+                'border': '#e2e8f0',
+                'accent': '#3b82f6',
+                'foreground': 'var(--text-primary)',
+                'muted-foreground': 'var(--text-secondary)',
             },
             fontFamily: {
-                sans: ['Inter', 'Outfit', 'sans-serif'],
+                sans: ['Work Sans', 'Inter', 'sans-serif'],
+                mono: ['IBM Plex Mono', 'monospace'],
             },
             boxShadow: {
                 'glow': '0 0 50px -10px rgba(255, 255, 255, 0.1)',

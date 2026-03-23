@@ -56,7 +56,18 @@ const leadSchema = new mongoose.Schema(
                 timestamp: { type: Date, default: Date.now },
             },
         ],
+        requiresReview: {
+            type: Boolean,
+            default: false,
+        },
+        safetyFlags: [String],
         memorySummary: { type: String, default: "" },
+        // Precision ROI Tracking
+        contactedAt: { type: Date, default: null },
+        qualifiedAt: { type: Date, default: null },
+        convertedAt: { type: Date, default: null },
+        dealSize: { type: Number, default: 0 },
+        isSample: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

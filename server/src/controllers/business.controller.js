@@ -23,9 +23,18 @@ export const getMyBusiness = async (req, res) => {
             return res.status(404).json({ message: "Business not found" });
         }
 
-        // Patch: Generate API Key if missing (for legacy data)
+        // Patch: Generate API Keys if missing (for legacy data)
+        let updated = false;
         if (!business.apiKey) {
-            business.apiKey = crypto.randomBytes(24).toString("hex");
+            business.apiKey = "sk_live_" + crypto.randomBytes(24).toString("hex");
+            updated = true;
+        }
+        if (!business.publicKey) {
+            business.publicKey = "pk_live_" + crypto.randomBytes(24).toString("hex");
+            updated = true;
+        }
+
+        if (updated) {
             await business.save();
         }
 

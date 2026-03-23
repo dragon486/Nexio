@@ -9,6 +9,18 @@ import { OAuth2Client } from "google-auth-library";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+export const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const getOAuth2Client = () => {
     const apiUrl = (process.env.API_URL || 'http://localhost:8000').trim().replace(/\/$/, "");
     const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim().replace(/^"|"$/g, '');
@@ -297,6 +309,7 @@ export const handleGmailCallback = async (req, res) => {
             console.warn("⚠️ No refresh token received. User might need to re-consent.");
         }
         user.gmailTokenExpiry = new Date(tokens.expiry_date);
+        user.gmailStatus = 'active';
 
         console.log("🕵️ Verifying User ID Token...");
         const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim().replace(/^"|"$/g, '');
@@ -336,6 +349,7 @@ export const disconnectGmail = async (req, res) => {
         user.gmailRefreshToken = undefined;
         user.gmailEmail = undefined;
         user.gmailTokenExpiry = undefined;
+        user.gmailStatus = 'disconnected';
 
         await user.save();
 

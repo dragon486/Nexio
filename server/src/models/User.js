@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema(
         gmailRefreshToken: String,
         gmailTokenExpiry: Date,
         gmailEmail: String, // The actual email address associated with the tokens
+        gmailStatus: {
+            type: String,
+            enum: ['active', 'error', 'disconnected'],
+            default: 'disconnected'
+        },
     },
     { timestamps: true }
 );

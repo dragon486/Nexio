@@ -22,6 +22,7 @@ const sampleLeads = [
         aiScore: 92,
         aiPriority: "high",
         aiNotes: "Strong interest in enterprise plan. Budget approved.",
+        dealSize: 45000,
         lastContactedAt: new Date(),
         message: "Hi, I'm looking for an enterprise-grade lead management solution for our 500+ employees. Can we schedule a demo?",
         tags: ["enterprise", "urgent"],
@@ -32,8 +33,11 @@ const sampleLeads = [
         aiResponse: {
             email: "Hi Sarah, I would be happy to schedule a demo for TechCorp. We specialize in enterprise scale. How does Thursday at 2pm look?",
             whatsapp: "Hi Sarah! Just saw your inquiry for TechCorp. I'm available for a demo this week.",
-            generatedAt: new Date()
-        }
+            generatedAt: new Date(Date.now() - 172800000 + 300000) // 2 days ago + 5 mins
+        },
+        createdAt: new Date(Date.now() - 172800000), // 2 days ago
+        contactedAt: new Date(Date.now() - 172800000 + 300000),
+        qualifiedAt: new Date(Date.now() - 172800000 + 600000)
     },
     {
         name: "James Wilson",
@@ -45,6 +49,7 @@ const sampleLeads = [
         aiScore: 78,
         aiPriority: "medium",
         aiNotes: "Evaluating vs competitors. Needs trial extension.",
+        dealSize: 12000,
         lastContactedAt: new Date(Date.now() - 86400000), // 1 day ago
         message: "I saw your platform on Product Hunt. How does the AI scoring compare to other CRM tools like HubSpot?",
         tags: ["startup", "trial"],
@@ -55,8 +60,10 @@ const sampleLeads = [
         aiResponse: {
             email: "Great question James! Unlike HubSpot which uses static rules, our AI analyzes the semantic intent and urgency of every message.",
             whatsapp: "Hey James! Saw you found us on Product Hunt. Our AI is much more dynamic than HubSpot's scoring.",
-            generatedAt: new Date()
-        }
+            generatedAt: new Date(Date.now() - 86400000 + 900000) // 1 day ago + 15 mins
+        },
+        createdAt: new Date(Date.now() - 86400000), // 1 day ago
+        contactedAt: new Date(Date.now() - 86400000 + 900000)
     },
     {
         name: "Emily Chen",
@@ -77,7 +84,10 @@ const sampleLeads = [
         email: "mbrown@bigfinance.com",
         phone: "+15550104",
         company: "Big Finance",
+        isAutoPilotContacted: true,
+        dealSize: 8500,
         status: "converted",
+        convertedAt: new Date(Date.now() - 172800000), // 2 days ago
         source: "outbound",
         aiScore: 98,
         aiPriority: "high",
@@ -92,15 +102,21 @@ const sampleLeads = [
         aiResponse: {
             email: "Hi Michael, welcome to Arlo! We've just activated your SOC2-compliant outbound engine. Should we walk through the setup together tomorrow?",
             whatsapp: "Welcome aboard Michael! Your finance-safe outbound engine is ready for deployment.",
-            generatedAt: new Date()
-        }
+            generatedAt: new Date(Date.now() - 259200000 + 1200000) // 3 days ago + 20 mins
+        },
+        createdAt: new Date(Date.now() - 259200000), // 3 days ago
+        contactedAt: new Date(Date.now() - 259200000 + 1200000),
+        qualifiedAt: new Date(Date.now() - 259200000 + 1800000)
     },
     {
         name: "David Lee",
         email: "david.lee@innovate.co",
         phone: "+15550105",
         company: "Innovate Co",
-        status: "qualified",
+        isAutoPilotContacted: true,
+        dealSize: 15500,
+        status: "converted",
+        convertedAt: new Date(Date.now() - 3600000), // 1 hour ago
         source: "website",
         aiScore: 88,
         aiPriority: "high",
@@ -114,8 +130,11 @@ const sampleLeads = [
         aiResponse: {
             email: "Hi David, glad the review passed! I've attached our procurement pack. Once this is signed, we can start the pilot immediately.",
             whatsapp: " Procurement is next! Sending the pack to your email now David.",
-            generatedAt: new Date()
-        }
+            generatedAt: new Date(Date.now() - 43200000 + 600000) // 12 hours ago + 10 mins
+        },
+        createdAt: new Date(Date.now() - 43200000), // 12 hours ago
+        contactedAt: new Date(Date.now() - 43200000 + 600000),
+        qualifiedAt: new Date(Date.now() - 43200000 + 900000)
     },
     {
         name: "Lisa Wong",
@@ -144,7 +163,7 @@ const seedDB = async () => {
 
         // Note: Using mongoose.connection.db to access collection directly to bypass model middleware if any, 
         // but here we just need a user ID.
-        let user = await mongoose.connection.collection('users').findOne({ email: 'demo@arlo.ai' });
+        let user = await mongoose.connection.collection('users').findOne({ email: 'test@arlo.ai' });
 
         if (!user) {
             console.log("User 'demo@arlo.ai' not found. Falling back to first available user.");
@@ -191,9 +210,12 @@ const seedDB = async () => {
             const processedLead = {
                 ...lead,
                 business: businessId,
-                createdAt: new Date(),
+                isSample: true,
                 updatedAt: new Date()
             };
+            
+            // If lead doesn't have a specific createdAt, default to now
+            if (!processedLead.createdAt) processedLead.createdAt = new Date();
 
             // Replace 'Arlo' with actual business name in seeded responses
             const bName = business.name.replace("'s Business", "");

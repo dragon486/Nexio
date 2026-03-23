@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GlassCard from '../components/ui/GlassCard';
+
 import Button from '../components/ui/Button';
 import api from '../services/api';
-import { Building2, MessageSquare, Zap, CheckCircle, ArrowRight } from 'lucide-react';
+import { Building2, MessageSquare, Zap, CheckCircle, ArrowRight, Copy, Check, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Onboarding = () => {
@@ -12,6 +12,8 @@ const Onboarding = () => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [businessId, setBusinessId] = useState(null);
+    const [copied, setCopied] = useState({ key: false, snippet: false });
+    const [showApiKey, setShowApiKey] = useState(false);
 
     const [formData, setFormData] = useState({
         // Step 1: Profile
@@ -35,7 +37,8 @@ const Onboarding = () => {
                     setFormData(prev => ({
                         ...prev,
                         ...res.data,
-                        apiKey: res.data.apiKey
+                        apiKey: res.data.apiKey,
+                        publicKey: res.data.publicKey
                     }));
                 }
             } catch (err) {
@@ -51,6 +54,13 @@ const Onboarding = () => {
 
     const handleNext = () => setStep(prev => prev + 1);
     const handleBack = () => setStep(prev => prev - 1);
+
+    const handleCopy = (text, type) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        setCopied(prev => ({ ...prev, [type]: true }));
+        setTimeout(() => setCopied(prev => ({ ...prev, [type]: false })), 2000);
+    };
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -75,60 +85,61 @@ const Onboarding = () => {
     };
 
     const StepIndicator = () => (
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <div className="flex items-center justify-center gap-3 mb-10">
             {[1, 2, 3].map(i => (
-                <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-white shadow-glow' : 'w-2 bg-white/10'}`} />
+                <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === step ? 'w-12 bg-[#3b82f6] shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'w-3 bg-[#e5e7eb] dark:bg-[#2a2a2a]'}`} />
             ))}
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            {/* Background Effects */}
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Professional Background Elements */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-white/[0.03] blur-[150px] rounded-full" />
+                <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/10 blur-[180px] rounded-full animate-pulse-slow" />
+                <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#10b981]/10 blur-[180px] rounded-full animate-pulse-slow" />
             </div>
 
-            <GlassCard className="w-full max-w-2xl relative z-10 p-8 min-h-[500px] flex flex-col">
+            <div className="w-full max-w-2xl relative z-10 p-12 bg-white/80 dark:bg-[#1a1a1a]/95 backdrop-blur-2xl rounded-[32px] min-h-[600px] flex flex-col shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.7)] border border-[#e5e7eb] dark:border-[#2a2a2a] transition-all duration-500">
                 <StepIndicator />
 
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-black text-white italic tracking-tighter mb-2">
-                        {step === 1 && "Tell us about your Business"}
-                        {step === 2 && "Configure AI Behavior"}
-                        {step === 3 && "Connect Your Leads"}
+                <div className="text-center mb-10">
+                    <h1 className="text-4xl font-black text-foreground italic tracking-tighter mb-3">
+                        {step === 1 && "Business Profile"}
+                        {step === 2 && "Identity Settings"}
+                        {step === 3 && "Final Handshake"}
                     </h1>
-                    <p className="text-[10px] text-muted font-black uppercase tracking-widest">
-                        {step === 1 && "Help Arlo understand who you are selling to."}
-                        {step === 2 && "Choose how Arlo should talk to your leads."}
-                        {step === 3 && "Start capturing high-intent leads from your website."}
+                    <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">
+                        {step === 1 && "Help NEXIO understand your target market and typical deal dynamics."}
+                        {step === 2 && "Configure the psychological profile and tone of your AI representative."}
+                        {step === 3 && "Deploy your capture snippet and bridge the gap to your dashboard."}
                     </p>
                 </div>
 
                 <div className="flex-1">
                     {step === 1 && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <label className="text-xs font-semibold text-muted uppercase tracking-wider">Industry</label>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center px-1">
+                                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Industry</label>
                                         <button
                                             onClick={() => setFormData({ ...formData, industry: 'SaaS & Enterprise Software' })}
-                                            className="text-[10px] text-white hover:text-zinc-300 transition-colors flex items-center gap-1 font-black uppercase tracking-widest"
+                                            className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] transition-colors flex items-center gap-1 font-black uppercase tracking-widest"
                                         >
-                                            <Zap size={10} /> AI Suggest
+                                            <Zap size={10} /> AI SUGGEST
                                         </button>
                                     </div>
-                                    <input name="industry" value={formData.industry} onChange={handleChange} className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3 focus:border-white/40 outline-none transition-all text-white placeholder:text-zinc-500" placeholder="e.g. Real Estate" />
+                                    <input name="industry" value={formData.industry} onChange={handleChange} className="w-full bg-surface-soft/50 border border-surface-border rounded-xl p-3.5 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground/30" placeholder="e.g. Real Estate" />
                                 </div>
-                                <div>
-                                    <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">Avg Deal Size</label>
-                                    <div className="flex bg-white/[0.03] border border-white/10 rounded-xl focus-within:border-white/40 overflow-hidden transition-all">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Avg Deal Size</label>
+                                    <div className="flex bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl focus-within:ring-4 focus-within:ring-[#3b82f6]/10 focus-within:border-[#3b82f6]/50 overflow-hidden transition-all shadow-inner">
                                         <select
                                             name="currency"
                                             value={formData.currency || 'USD'}
                                             onChange={handleChange}
-                                            className="bg-white/5 border-r border-white/10 px-3 py-3 text-xs outline-none text-white hover:bg-white/10 transition-all font-bold"
+                                            className="bg-[#ffffff] dark:bg-[#1a1a1a] border-r border-[#e5e7eb] dark:border-[#2a2a2a] px-3 py-3.5 text-xs outline-none text-[#0f172a] dark:text-[#f8fafc] hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a]/80 transition-all font-black"
                                         >
                                             <option value="USD">USD</option>
                                             <option value="EUR">EUR</option>
@@ -139,55 +150,55 @@ const Onboarding = () => {
                                             name="avgDealSize"
                                             value={formData.avgDealSize}
                                             onChange={handleChange}
-                                            className="flex-1 bg-transparent px-3 py-3 focus:outline-none text-white font-bold placeholder:text-zinc-500"
+                                            className="flex-1 bg-transparent px-4 py-3.5 focus:outline-none text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30"
                                             placeholder="5,000"
                                         />
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <div className="flex justify-between items-center mb-1">
-                                    <label className="text-xs font-semibold text-muted uppercase tracking-wider">Target Audience</label>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center px-1">
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Target Audience</label>
                                     <button
                                         onClick={() => setFormData({ ...formData, targetAudience: 'CTOs and IT Directors at mid-market firms' })}
-                                        className="text-[10px] text-white hover:text-zinc-300 transition-colors flex items-center gap-1 font-black uppercase tracking-widest"
+                                        className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] transition-colors flex items-center gap-1 font-black uppercase tracking-widest"
                                     >
-                                        <Zap size={10} /> AI Suggest
+                                        <Zap size={10} /> AI SUGGEST
                                     </button>
                                 </div>
-                                <input name="targetAudience" value={formData.targetAudience} onChange={handleChange} className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3 focus:border-white/40 outline-none transition-all text-white font-medium placeholder:text-zinc-500" placeholder="e.g. Home buyers in Austin, TX" />
+                                <input name="targetAudience" value={formData.targetAudience} onChange={handleChange} className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl p-4 focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 outline-none transition-all text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30 shadow-inner" placeholder="e.g. Home buyers in Austin, TX" />
                             </div>
-                            <div>
-                                <label className="text-xs font-semibold text-muted uppercase tracking-wider mb-1 block">Website URL</label>
-                                <input name="website" value={formData.website} onChange={handleChange} className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3 focus:border-white/40 outline-none transition-all text-white font-medium placeholder:text-zinc-500" placeholder="https://..." />
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Website URL</label>
+                                <input name="website" value={formData.website} onChange={handleChange} className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl p-4 focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 outline-none transition-all text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30 shadow-inner" placeholder="https://..." />
                             </div>
                         </motion.div>
                     )}
 
                     {step === 2 && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                            <div>
-                                <label className="text-sm font-medium text-gray-300 mb-2 block">AI Tone</label>
-                                <div className="grid grid-cols-3 gap-3">
+                            <div className="space-y-3">
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">AI Tone</label>
+                                <div className="grid grid-cols-3 gap-4">
                                     {['friendly', 'professional', 'aggressive'].map(t => (
                                         <button
                                             key={t}
                                             onClick={() => setFormData({ ...formData, tone: t })}
-                                            className={`p-3 rounded-xl border capitalize transition-all text-xs font-black uppercase tracking-widest ${formData.tone === t ? 'bg-white text-black border-white shadow-glow' : 'bg-white/[0.03] border-white/10 text-muted hover:bg-white/5'}`}
+                                            className={`p-5 rounded-2xl border transition-all duration-300 font-black text-[10px] uppercase tracking-[0.2em] ${formData.tone === t ? 'bg-[#3b82f6] text-white border-[#3b82f6] shadow-xl shadow-blue-500/20 scale-[1.05]' : 'bg-[#fafafa] dark:bg-[#0f0f0f] border-[#e5e7eb] dark:border-[#2a2a2a] text-[#64748b] dark:text-[#94a3b8] hover:border-[#3b82f6]/30'}`}
                                         >
                                             {t}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-300 mb-2 block">Follow-up Style</label>
-                                <div className="grid grid-cols-3 gap-3">
+                            <div className="space-y-3">
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Follow-up Style</label>
+                                <div className="grid grid-cols-3 gap-4">
                                     {['soft', 'direct', 'urgent'].map(s => (
                                         <button
                                             key={s}
                                             onClick={() => setFormData({ ...formData, followupStyle: s })}
-                                            className={`p-3 rounded-xl border capitalize transition-all text-xs font-black uppercase tracking-widest ${formData.followupStyle === s ? 'bg-white text-black border-white shadow-glow' : 'bg-white/[0.03] border-white/10 text-muted hover:bg-white/5'}`}
+                                            className={`p-5 rounded-2xl border transition-all duration-300 font-black text-[10px] uppercase tracking-[0.2em] ${formData.followupStyle === s ? 'bg-[#3b82f6] text-white border-[#3b82f6] shadow-xl shadow-blue-500/20 scale-[1.05]' : 'bg-[#fafafa] dark:bg-[#0f0f0f] border-[#e5e7eb] dark:border-[#2a2a2a] text-[#64748b] dark:text-[#94a3b8] hover:border-[#3b82f6]/30'}`}
                                         >
                                             {s}
                                         </button>
@@ -199,45 +210,90 @@ const Onboarding = () => {
 
                     {step === 3 && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                            <div className="bg-surface/50 border border-white/10 rounded-xl p-4">
-                                <h3 className="font-semibold mb-2 flex items-center gap-2"><Zap size={18} className="text-yellow-400" /> Your API Key</h3>
-                                <div className="bg-black/40 p-3 rounded-lg font-mono text-sm text-gray-300 break-all select-all">
-                                    {formData.apiKey || 'arlo_live_generating...'}
+                            <div className="bg-surface-soft/50 border border-surface-border rounded-2xl p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Zap size={14} className="text-amber-500" /> Your NEXIO Key</h3>
+                                    <button 
+                                        onClick={() => handleCopy(formData.apiKey, 'key')}
+                                        className="text-[10px] font-bold text-amber-500 hover:text-amber-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter"
+                                    >
+                                        {copied.key ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+                                    </button>
+                                </div>
+                                <div className="bg-background/80 border border-surface-border p-4 rounded-xl font-mono text-xs text-foreground flex items-center justify-between min-w-0 group" onClick={() => handleCopy(formData.apiKey, 'key')}>
+                                    <div className="flex-1 overflow-hidden truncate mr-2">
+                                        {showApiKey ? (formData.apiKey || 'nexio_live_generating...') : '••••••••••••••••••••••••••••••••'}
+                                    </div>
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowApiKey(!showApiKey);
+                                            }}
+                                            className="p-1.5 hover:bg-surface-highlight rounded transition-colors text-muted-foreground hover:text-foreground"
+                                            title={showApiKey ? "Hide API Key" : "Show API Key"}
+                                        >
+                                            {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        </button>
+                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="bg-surface/50 border border-white/10 rounded-xl p-4">
-                                <h3 className="font-semibold mb-2 flex items-center gap-2"><Building2 size={18} className="text-blue-400" /> Lead Capture Snippet</h3>
-                                <p className="text-sm text-gray-400 mb-2">Paste this HTML in your website to start capturing leads instantly.</p>
-                                <div className="bg-black/40 p-3 rounded-lg font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">
-                                    {`<form action="http://localhost:8000/api/leads/capture" method="POST">
-  <input type="hidden" name="apiKey" value="${formData.apiKey || 'YOUR_API_KEY'}" />
-  <input type="text" name="name" placeholder="Name" required />
-  <input type="email" name="email" placeholder="Email" required />
-  <button type="submit">Submit</button>
-</form>`}
+                            <div className="bg-surface-soft/50 border border-surface-border rounded-2xl p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Building2 size={14} className="text-primary" /> Lead Capture Bridge</h3>
+                                        <p className="text-[10px] text-muted-foreground mt-1 font-medium">Embed this snippet into your HTML to bridge your site with NEXIO.</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleCopy(`<form action="${window.location.origin}/api/leads/capture" method="POST">\n  <input type="hidden" name="apiKey" value="${formData.publicKey || 'YOUR_PUBLIC_KEY'}" />\n  <input type="email" name="email" placeholder="Email" required />\n  <button type="submit">Connect</button>\n</form>`, 'snippet')}
+                                        className="text-[10px] font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5 uppercase tracking-tighter shrink-0"
+                                    >
+                                        {copied.snippet ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+                                    </button>
+                                </div>
+                                <div 
+                                    className="bg-background/80 border border-surface-border p-4 rounded-xl font-mono text-[11px] text-amber-500/80 overflow-x-auto whitespace-pre custom-scrollbar transition-colors hover:border-primary/30"
+                                >
+                                    {`<!-- NEXIO Public Snippet: Secure & Authorized -->\n` +
+                                    `<form action="${window.location.origin}/api/leads/capture" method="POST">
+   <input type="hidden" name="apiKey" value="${formData.publicKey || 'YOUR_PUBLIC_KEY'}" />
+   <input type="email" name="email" placeholder="Email" required />
+   <button type="submit">Connect</button>
+ </form>`}
+                                </div>
+                                <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
+                                    <ShieldCheck size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                                    <p className="text-[10px] text-blue-200 leading-relaxed">
+                                        <span className="font-bold">Pro Tip:</span> For production, hide your key in a <code className="bg-blue-500/20 px-1 rounded">.env</code> file. Check the <span className="font-bold">Integrations</span> dashboard later for a secure server-side example.
+                                    </p>
                                 </div>
                             </div>
                         </motion.div>
                     )}
                 </div>
 
-                <div className="flex justify-between mt-8 pt-4 border-t border-white/5">
+                <div className="flex justify-between mt-10 pt-6 border-t border-surface-border">
                     {step > 1 ? (
-                        <Button variant="ghost" onClick={handleBack}>Back</Button>
+                        <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground font-bold uppercase tracking-widest text-xs">
+                            Previous Step
+                        </Button>
                     ) : (
                         <div />
                     )}
 
                     {step < 3 ? (
-                        <Button onClick={handleNext}>Continue <ArrowRight size={18} /></Button>
+                        <Button onClick={handleNext} className="w-48 h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none inline-flex items-center justify-center gap-2">
+                            CONTINUE <ArrowRight size={14} />
+                        </Button>
                     ) : (
-                        <Button onClick={handleSubmit} disabled={loading} className="px-8 bg-white text-black hover:bg-zinc-200 shadow-glow">
-                            {loading ? 'Setup...' : 'Launch Cockpit 🚀'}
+                        <Button onClick={handleSubmit} disabled={loading} className="w-56 h-14 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none">
+                            {loading ? 'CALIBRATING...' : 'LAUNCH HUB'}
                         </Button>
                     )}
                 </div>
-            </GlassCard>
+            </div>
         </div>
     );
 };

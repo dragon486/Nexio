@@ -91,9 +91,26 @@ export const syncEmails = async () => {
 
                 // Auto-refresh token if needed
                 if (!user.gmailTokenExpiry || user.gmailTokenExpiry < new Date(Date.now() + 60000)) {
-                    const { credentials } = await oauth2Client.refreshAccessToken();
-                    user.gmailAccessToken = credentials.access_token;
-                    user.gmailTokenExpiry = new Date(credentials.expiry_date);
+                    try {
+                        const { credentials } = await oauth2Client.refreshAccessToken();
+                        user.gmailAccessToken = credentials.access_token;
+                        user.gmailTokenExpiry = new Date(credentials.expiry_date);
+                        user.gmailStatus = 'active'; // Reset if it was in error
+                        await user.save();
+                    } catch (refreshErr) {
+                        if (refreshErr.message.includes("invalid_grant")) {
+                            user.gmailStatus = 'error';
+                            await user.save();
+                            emitToBusiness(await getBusinessIdForUser(user._id), "gmail_status_change", { status: 'error', email: user.email });
+                            throw new Error("re-auth required");
+                        }
+                        throw refreshErr;
+                    }
+                }
+
+                // Ensure status is active if we reached here
+                if (user.gmailStatus !== 'active') {
+                    user.gmailStatus = 'active';
                     await user.save();
                 }
 
@@ -224,7 +241,11 @@ export const syncEmails = async () => {
                 }
             } catch (userErr) {
                 // Might fail if user revoked access or hasn't accepted the new readonly scope yet
-                console.log(`⚠️ [EmailSync] Could not sync user ${user.email} - Needs re-auth: ${userErr.message}`);
+                if (userErr.message === "re-auth required" || userErr.message.includes("invalid_grant")) {
+                    console.log(`⚠️ [EmailSync] Re-auth required for ${user.email}`);
+                } else {
+                    console.error(`⚠️ [EmailSync] Could not sync user ${user.email}:`, userErr.message);
+                }
             }
         }
     } catch (error) {

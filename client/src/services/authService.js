@@ -47,6 +47,18 @@ export const isAuthenticated = () => {
     return !!localStorage.getItem('token');
 };
 
+export const getMe = async () => {
+    try {
+        const response = await api.get('/auth/me');
+        if (response.data) {
+            localStorage.setItem('user', JSON.stringify(response.data));
+        }
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const getUser = () => {
     const userStr = localStorage.getItem('user');
     if (userStr) return JSON.parse(userStr);

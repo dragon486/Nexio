@@ -13,7 +13,7 @@ const DashboardLayout = () => {
 
             <Sidebar />
 
-            <main className="ml-64 p-8 relative z-10">
+            <main className="ml-[200px] p-8 relative z-10">
                 <div className="max-w-7xl mx-auto">
                     <Outlet />
                 </div>

@@ -20,7 +20,14 @@ import Integrations from './pages/settings/Integrations';
 import Billing from './pages/settings/Billing';
 // Marketing Pages
 import Home from './pages/marketing/Home';
-import Demo from './pages/marketing/Demo';
+import AboutPage from './pages/marketing/About';
+import BlogPage from './pages/marketing/Blog';
+import CareersPage from './pages/marketing/Careers';
+import ContactPage from './pages/marketing/Contact';
+import ChangelogPage from './pages/marketing/Changelog';
+import PrivacyPage from './pages/marketing/legal/Privacy';
+import TermsPage from './pages/marketing/legal/Terms';
+import SecurityPage from './pages/marketing/legal/Security';
 
 import { isAuthenticated } from './services/authService';
 
@@ -45,7 +52,16 @@ const App = () => {
         {/* Public Marketing Routes */}
         <Route element={<MarketingLayout />}>
           <Route path="/" element={<Home />} />
-          {/* Add Demo, Pricing here later */}
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/security" element={<SecurityPage />} />
+          <Route path="/demo" element={<Home />} />
+          <Route path="/solutions" element={<Home />} />
         </Route>
 
         {/* Auth Routes */}

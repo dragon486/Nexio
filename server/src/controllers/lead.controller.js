@@ -4,6 +4,7 @@ import Notification from "../models/Notification.js";
 import { emitToBusiness } from "../utils/socket.js";
 import { processLead } from "../services/aiScoring.js";
 import { sendEmail } from "../services/emailService.js";
+import { validateAiOutput, getFallbackEmail } from "../utils/safetyGuard.js";
 
 // Helper: Check & Increment Email Limit
 const checkAndIncrementEmailLimit = async (business) => {
@@ -94,52 +95,83 @@ export const createLead = async (req, res) => {
         const business = await Business.findById(leadData.business);
 
         if (business && business.aiCredits > 0) {
+            let aiResult = { aiScore: 0, aiResponse: {} };
+            const bName = (business.name || "Arlo").replace("'s Business", "");
+            let serviceFailed = false;
+
             try {
-                // Fetch existing history if any (for createLead it's likely empty unless we looked up by email, but keeping it simple)
-                const bName = business.name.replace("'s Business", "");
-                const aiResult = await processLead({
+                // Primary AI Pipeline
+                const result = await processLead({
                     ...leadData,
                     business: business
                 }, [], "", bName, req.user?.name || "the Sales Team");
+                
+                aiResult = result;
+                if (!aiResult.aiResponse) aiResult.aiResponse = {};
                 Object.assign(leadData, aiResult);
 
-                // Auto-Send Email
-                const minScore = business.settings.minScoreToAutoReply || 50;
-                if (business.settings.autoReply && aiResult.aiResponse?.email && (aiResult.aiScore >= minScore)) {
-                    const inHours = isWithinWorkingHours(business);
-                    const canSend = inHours && (await checkAndIncrementEmailLimit(business));
+                // 1. Safety Validation (Act Phase)
+                const emailContent = aiResult.aiResponse?.email;
+                const safetyResult = validateAiOutput(emailContent);
 
-                    if (canSend) {
-                        const subject = aiResult.aiResponse.emailSubject || "Re: Your Inquiry - " + business.name;
-                        sendEmail(leadData.email, subject, aiResult.aiResponse.email, business.owner);
-                        leadData.status = "contacted";
-                        leadData.isAutoPilotContacted = true;
-                        aiResult.aiResponse.autoSent = true; // Flag for UI
-                    } else if (!inHours) {
-                        console.log(`[Auto-Pilot] Outside working hours for ${business.name}. Skipping auto-send.`);
-                        leadData.aiNotes = (leadData.aiNotes || "") + "\n[System] Auto-reply scheduled: Outside working hours.";
-                    } else {
-                        console.warn(`Email limit reached for business ${business.name}`);
-                        leadData.aiNotes = (leadData.aiNotes || "") + "\n[System] Auto-reply skipped: Daily email limit reached.";
-                    }
-                }
-
-                // Save to History (AFTER auto-send check)
-                const newHistory = [
-                    { role: "user", content: leadData.message }
-                ];
-                if (aiResult.aiScore > 0 || Object.keys(aiResult.aiResponse).length > 0) {
-                    newHistory.push({ role: "model", content: JSON.stringify(aiResult.aiResponse) });
-                }
-                leadData.conversationHistory = newHistory;
-                if (aiResult.newSummary) leadData.memorySummary = aiResult.newSummary;
-
-                // Notify if limit hit
-                if (aiResult.aiScore === 0) {
-                    await notifyAiLimit(business._id, aiResult.aiNotes, leadData.name || "a website lead");
+                if (!safetyResult.safe) {
+                    console.error(`[Safety Intercept] AI content rejected in createLead: ${safetyResult.reason}`);
+                    leadData.requiresReview = true;
+                    leadData.aiNotes = (leadData.aiNotes || "") + `\n[Safety Block] AI-generated reply replaced with fallback: ${safetyResult.reason}`;
+                    
+                    // Trigger Fallback Email (Safe Mode)
+                    aiResult.aiResponse.email = getFallbackEmail(bName, leadData.name);
+                    aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
                 }
             } catch (e) {
-                console.error("AI Scoring failed:", e.message);
+                console.error("AI Service failure in createLead:", e.message);
+                serviceFailed = true;
+                leadData.requiresReview = true;
+                leadData.aiNotes = (leadData.aiNotes || "") + `\n[System Fallback] AI service unavailable, fallback email sent.`;
+                
+                // Trigger Rescue Fallback
+                aiResult.aiResponse.email = getFallbackEmail(bName, leadData.name);
+                aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
+            }
+
+            // 2. Auto-Send Email (Unified Logic)
+            const minScore = business.settings.minScoreToAutoReply || 50;
+            const shouldSend = (aiResult.aiScore >= minScore) || serviceFailed;
+
+            if (business.settings.autoReply && aiResult.aiResponse?.email && shouldSend) {
+                const inHours = isWithinWorkingHours(business);
+                const canSend = inHours && (await checkAndIncrementEmailLimit(business));
+
+                if (canSend) {
+                    const subject = aiResult.aiResponse.emailSubject || "Re: Your Inquiry - " + business.name;
+                    await sendEmail(leadData.email, subject, aiResult.aiResponse.email, business.owner);
+                    leadData.status = "contacted";
+                    leadData.isAutoPilotContacted = true;
+                    aiResult.aiResponse.autoSent = true; 
+                } else if (!inHours) {
+                    console.log(`[Auto-Pilot] Outside working hours for ${business.name}. Skipping auto-send.`);
+                    leadData.aiNotes = (leadData.aiNotes || "") + "\n[System] Auto-reply scheduled: Outside working hours.";
+                } else {
+                    console.warn(`Email limit reached for business ${business.name}`);
+                    leadData.aiNotes = (leadData.aiNotes || "") + "\n[System] Auto-reply skipped: Daily email limit reached.";
+                }
+            }
+
+            // 3. Save to History
+            const newHistory = [];
+            if (leadData.message) {
+                newHistory.push({ role: "user", content: leadData.message });
+            }
+
+            if (aiResult.aiScore > 0 || (aiResult.aiResponse && Object.keys(aiResult.aiResponse).length > 0)) {
+                newHistory.push({ role: "model", content: JSON.stringify(aiResult.aiResponse) });
+            }
+            leadData.conversationHistory = newHistory;
+            if (aiResult.newSummary) leadData.memorySummary = aiResult.newSummary;
+
+            // Notify if limit hit
+            if (aiResult.aiScore === 0) {
+                await notifyAiLimit(business._id, aiResult.aiNotes, leadData.name || "a website lead");
             }
         } else {
             leadData.aiNotes = "AI Limit Reached. Upgrade to Premium for scoring.";
@@ -159,98 +191,114 @@ export const createLead = async (req, res) => {
 
 export const captureLead = async (req, res) => {
     try {
-        const { name, email, phone, message } = req.body;
+        const { name, email, phone, message, dealSize, source } = req.body;
 
         const leadData = {
             name,
             email,
             phone,
             message,
-            business: req.business._id,
-            source: "website"
+            dealSize: dealSize || 0,
+            source: source || "website",
+            isSample: false,
+            business: req.business._id
         };
 
         // Check AI Credits (req.business is available, but fetch fresh doc to save)
         const business = await Business.findById(req.business._id).populate('owner');
 
-        let aiData = {};
-
         if (business && business.aiCredits > 0) {
+            let aiResult = { aiScore: 0, aiResponse: {} };
+            const bName = (business.name || "Arlo").replace("'s Business", "");
+            let serviceFailed = false;
+
             try {
-                // Check for existing lead to get history? 
-                // captureLead usually implies new lead, but if we want context, we should query by email first?
-                // For now, treating as new.
-                const bName = business.name.replace("'s Business", "");
-                const aiResult = await processLead({
+                // Primary AI Pipeline
+                const result = await processLead({
                     name, email, phone, message,
                     business: business
                 }, [], "", bName, business.owner?.name || "the Sales Team");
 
-                // Atomic update
-                if (aiResult.aiScore !== undefined && aiResult.aiScore !== null) {
+                aiResult = result;
+                if (!aiResult.aiResponse) aiResult.aiResponse = {};
+
+                // Atomic credit deduction - ONLY on success
+                business.aiCredits -= 1;
+                await business.save();
+
+                // Object assignment for lead data
+                if (aiResult.aiScore !== undefined) {
                     leadData.aiScore = aiResult.aiScore;
                     leadData.aiPriority = aiResult.aiPriority || "low";
                 }
                 if (aiResult.aiNotes !== undefined) leadData.aiNotes = aiResult.aiNotes;
 
-                aiData = aiResult; // Store for notification
+                // 1. Safety Validation (Act Phase)
+                const emailContent = aiResult.aiResponse?.email;
+                const safetyResult = validateAiOutput(emailContent);
 
-                // Deduct Credit (Internal)
-                business.aiCredits -= 1;
-
-                // Auto-Send Email
-                const minScore = business.settings.minScoreToAutoReply || 50;
-                console.log(`[Auto-Pilot] Checking autoReply for ${business.name}. AI Score: ${aiResult.aiScore}, Threshold: ${minScore}`);
-
-                if (business.settings.autoReply && aiResult.aiResponse?.email && (aiResult.aiScore >= minScore)) {
-                    const inHours = isWithinWorkingHours(business);
-                    const canSend = inHours && (await checkAndIncrementEmailLimit(business));
-
-                    console.log(`[Auto-Pilot] Working hours check: ${inHours}, Limit check: ${!!canSend}`);
-
-                    if (canSend) {
-                        console.log(`[Auto-Pilot] Sending automated email to ${email}`);
-                        try {
-                            const subject = aiResult.aiResponse.emailSubject || "Re: Your Inquiry - " + business.name;
-                            const emailResult = await sendEmail(email, subject, aiResult.aiResponse.email, business.owner._id);
-                            leadData.status = "contacted";
-                            leadData.isAutoPilotContacted = true;
-                            aiResult.aiResponse.autoSent = true; // Flag for UI persistence
-
-                            // Save thread ID for two-way sync
-                            if (emailResult && emailResult.threadId) {
-                                leadData.gmailThreadId = emailResult.threadId;
-                                leadData.lastEmailReceivedAt = new Date();
-                            }
-                        } catch (emailErr) {
-                            console.error(`❌ [Auto-Pilot] Failed to send email to ${email}:`, emailErr.message);
-                            // We don't crash the server, just log the error.
-                        }
-                    } else if (!inHours) {
-                        console.log(`[Auto-Pilot] Outside working hours. Lead remains new.`);
-                    } else {
-                        console.warn(`Email limit reached for business ${business.name}`);
-                    }
-                }
-
-                // Save to History (AFTER auto-send check to ensure autoSent flag is included)
-                const newHistory = [
-                    { role: "user", content: message }
-                ];
-
-                if (aiResult.aiScore > 0 || (aiResult.aiResponse && Object.keys(aiResult.aiResponse).length > 0)) {
-                    newHistory.push({ role: "model", content: JSON.stringify(aiResult.aiResponse) });
-                }
-
-                leadData.conversationHistory = newHistory;
-                if (aiResult.newSummary) leadData.memorySummary = aiResult.newSummary;
-
-                // Notify if limit hit
-                if (aiResult.aiScore === 0) {
-                    await notifyAiLimit(business._id, aiResult.aiNotes, name || "a website lead");
+                if (!safetyResult.safe) {
+                    console.error(`[Safety Intercept] AI content rejected in captureLead: ${safetyResult.reason}`);
+                    leadData.requiresReview = true;
+                    leadData.aiNotes = (leadData.aiNotes || "") + `\n[Safety Block] AI-generated reply replaced with fallback: ${safetyResult.reason}`;
+                    
+                    // Trigger Fallback Email (Safe Mode)
+                    aiResult.aiResponse.email = getFallbackEmail(bName, name);
+                    aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
                 }
             } catch (e) {
-                console.error("AI Scoring failed:", e.message);
+                console.error("AI Service failure in captureLead:", e.message);
+                serviceFailed = true;
+                leadData.requiresReview = true;
+                leadData.aiNotes = (leadData.aiNotes || "") + `\n[System Fallback] AI service unavailable, fallback email sent.`;
+                
+                // Trigger Rescue Fallback
+                aiResult.aiResponse.email = getFallbackEmail(bName, name);
+                aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
+            }
+
+            // 2. Auto-Send Email (Unified Logic)
+            const minScore = business.settings.minScoreToAutoReply || 50;
+            const shouldSend = (aiResult.aiScore >= minScore) || serviceFailed;
+
+            if (business.settings.autoReply && aiResult.aiResponse?.email && shouldSend) {
+                const inHours = isWithinWorkingHours(business);
+                const canSend = inHours && (await checkAndIncrementEmailLimit(business));
+
+                if (canSend) {
+                    try {
+                        const subject = aiResult.aiResponse.emailSubject || "Re: Your Inquiry - " + business.name;
+                        const emailResult = await sendEmail(email, subject, aiResult.aiResponse.email, business.owner._id);
+                        leadData.status = "contacted";
+                        leadData.isAutoPilotContacted = true;
+                        aiResult.aiResponse.autoSent = true; 
+
+                        if (emailResult && emailResult.threadId) {
+                            leadData.gmailThreadId = emailResult.threadId;
+                            leadData.lastEmailReceivedAt = new Date();
+                        }
+                    } catch (emailErr) {
+                        console.error(`❌ [Auto-Pilot] Failed to send email to ${email}:`, emailErr.message);
+                    }
+                }
+            }
+
+            // 3. Save to History
+            const newHistory = [];
+            if (message) {
+                newHistory.push({ role: "user", content: message });
+            }
+
+            if (aiResult.aiScore > 0 || (aiResult.aiResponse && Object.keys(aiResult.aiResponse).length > 0)) {
+                newHistory.push({ role: "model", content: JSON.stringify(aiResult.aiResponse) });
+            }
+
+            leadData.conversationHistory = newHistory;
+            if (aiResult.newSummary) leadData.memorySummary = aiResult.newSummary;
+
+            // Notify if limit hit
+            if (aiResult.aiScore === 0) {
+                await notifyAiLimit(business._id, aiResult.aiNotes, name || "a website lead");
             }
         } else {
             leadData.aiNotes = "AI Limit Reached. Upgrade to Premium for scoring.";
@@ -447,6 +495,54 @@ export const markAllAsRead = async (req, res) => {
             { read: true }
         );
         res.json({ success: true, message: "All leads marked as read" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updateLead = async (req, res) => {
+    try {
+        const { status, dealSize } = req.body;
+        const lead = await Lead.findOne({
+            _id: req.params.id,
+            business: req.user.businessId
+        });
+
+        if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+        // Update fields if provided
+        if (dealSize !== undefined) lead.dealSize = dealSize;
+        
+        if (status && lead.status !== status) {
+            const validStatuses = ["new", "contacted", "qualified", "converted", "lost"];
+            if (!validStatuses.includes(status)) {
+                return res.status(400).json({ message: "Invalid status" });
+            }
+
+            lead.status = status;
+
+            // Anchor timestamps on first transition (Phase 2 logic)
+            const now = new Date();
+            if (status === "contacted" && !lead.contactedAt) lead.contactedAt = now;
+            if (status === "qualified" && !lead.qualifiedAt) {
+                lead.qualifiedAt = now;
+                // If it reached qualified, it must have been contacted
+                if (!lead.contactedAt) lead.contactedAt = now;
+            }
+            if (status === "converted" && !lead.convertedAt) {
+                lead.convertedAt = now;
+                // If it reached converted, it must have been contacted and qualified
+                if (!lead.contactedAt) lead.contactedAt = now;
+                if (!lead.qualifiedAt) lead.qualifiedAt = now;
+            }
+        }
+
+        await lead.save();
+        
+        // Real-time Update for Dashboard
+        emitToBusiness(lead.business, "update_analytics", {});
+        
+        res.json(lead);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

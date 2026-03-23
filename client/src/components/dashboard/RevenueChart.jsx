@@ -1,38 +1,29 @@
 import React, { useState } from 'react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import GlassCard from '../ui/GlassCard';
-import { ArrowUpRight, Calendar, BarChart2 } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
+import { ArrowUpRight } from 'lucide-react';
 
-const RevenueChart = ({ data }) => {
+const RevenueChart = ({ data, isDemo, currency = 'USD', locale = 'en-US', title, subtitle }) => {
     const [timeRange, setTimeRange] = useState('7d');
 
-    // Filter logic
-    const getFilteredData = () => {
-        if (!data) return [];
-        const copy = [...data];
-        switch (timeRange) {
-            case '24h': return copy.slice(-1);
-            case '7d': return copy.slice(-7);
-            case '30d': return copy.slice(-30);
-            case 'All': return copy;
-            default: return copy.slice(-7);
-        }
+    const formatValue = (value) => {
+        return new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: currency,
+            maximumFractionDigits: 0
+        }).format(value);
     };
-
-    const filteredData = getFilteredData();
-    const hasData = filteredData && filteredData.length > 0;
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-black/90 border border-white/10 p-3 rounded-xl shadow-xl backdrop-blur-md z-50">
-                    <p className="text-white text-xs font-bold mb-1">{label}</p>
-                    <p className="text-brand-purple text-sm font-black">
-                        ${payload[0].value.toLocaleString()}
-                    </p>
-                    <p className="text-brand-blue text-xs">
-                        {payload[1].value.toFixed(0)} Leads
-                    </p>
+                <div className="bg-surface border border-transparent p-4 rounded-xl shadow-2xl backdrop-blur-xl z-50">
+                    <p className="text-text-tertiary text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">{label}</p>
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-accent" />
+                        <p className="text-text-primary text-lg font-black tracking-tighter">
+                            {formatValue(payload[0].value * 100)}
+                        </p>
+                    </div>
                 </div>
             );
         }
@@ -40,105 +31,59 @@ const RevenueChart = ({ data }) => {
     };
 
     return (
-        <GlassCard className="h-full flex flex-col p-6 relative group border-white/5 overflow-hidden">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 z-20">
+        <div className="bg-surface border border-transparent rounded-2xl p-8 hover:shadow-xl hover:shadow-black/5 transition-all flex flex-col h-full relative group overflow-hidden">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4 z-20">
                 <div>
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                        Revenue Growth <ArrowUpRight className="text-emerald-500" size={16} />
+                    <h3 className="text-sm font-black text-text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                        {title || 'Revenue Growth'} <ArrowUpRight className="text-accent" size={18} />
                     </h3>
-                    <p className="text-[11px] text-muted mt-1">Net revenue from AI-converted leads</p>
+                    <p className="text-[11px] text-text-tertiary mt-2 font-bold opacity-60">{subtitle || 'Intelligence-driven performance'}</p>
                 </div>
 
-                <div className="flex bg-white/5 p-0.5 rounded-lg border border-white/5 relative z-50">
-                    {['24h', '7d', '30d', 'All'].map((range) => (
-                        <button
-                            key={range}
-                            onClick={() => {
-                                console.log("Clicked range:", range);
-                                setTimeRange(range);
-                            }}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all relative ${timeRange === range
-                                ? 'bg-zinc-800 text-white shadow-sm ring-1 ring-white/10'
-                                : 'text-muted hover:text-zinc-300 hover:bg-white/5'
-                                }`}
-                        >
-                            {range}
-                        </button>
-                    ))}
-                    <div className="w-px h-4 bg-white/10 mx-1 self-center" />
-                    <button
-                        className="px-2 py-1.5 rounded-md text-muted hover:text-white hover:bg-white/5 transition-all relative group/cal"
-                        title="Custom Range"
-                        onClick={() => console.log("Calendar clicked")}
-                    >
-                        <Calendar size={14} />
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[10px] text-white opacity-0 group-hover/cal:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/10">Custom Range</span>
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex-1 w-full min-h-[250px] z-10 relative">
-                {!hasData ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted z-20">
-                        <div className="p-4 rounded-full bg-white/5 mb-3">
-                            <BarChart2 size={24} className="opacity-50" />
-                        </div>
-                        <p className="text-xs font-medium">No data available for this period</p>
-                        <p className="text-[10px] opacity-60 mt-1">Try selecting a different time range</p>
+                <div className="flex items-center gap-3">
+                    <div className={`px-3 py-1 rounded-full text-[9px] font-black tracking-[0.1em] border transition-all ${isDemo ? 'bg-accent/10 text-accent border-transparent' : 'bg-surface-soft/50 text-text-tertiary border-transparent'}`}>
+                        {isDemo ? 'DEMO INTEL' : 'ACTUALS'}
                     </div>
-                ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1} />
-                                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                            <XAxis
-                                dataKey="date"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fill: '#666', fontSize: 10, dy: 10 }}
-                                interval="preserveStartEnd"
-                                minTickGap={30}
-                            />
-                            <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fill: '#666', fontSize: 10, dx: -10 }}
-                                tickFormatter={(value) => `$${value / 1000}k`}
-                            />
-                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
-                            <Area
-                                type="monotone"
-                                dataKey="revenue"
-                                stroke="#8B5CF6"
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorRevenue)"
-                                isAnimationActive={true}
-                                animationDuration={1000}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="leads"
-                                stroke="#3B82F6"
-                                strokeWidth={2}
-                                fillOpacity={1}
-                                fill="url(#colorLeads)"
-                                yAxisId={0}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                )}
+                </div>
             </div>
-        </GlassCard>
+
+            <div className="flex-1 w-full min-h-[300px] z-10 relative">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="opacity-[0.03]" vertical={false} />
+                        <XAxis
+                            dataKey="date"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: 'var(--text-tertiary)', fontSize: 10, fontWeight: 700, opacity: 0.5 }}
+                        />
+                        <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: 'var(--text-tertiary)', fontSize: 10, fontWeight: 700, opacity: 0.5 }}
+                            tickFormatter={(value) => `$${value}k`}
+                        />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} />
+                        <Bar 
+                            dataKey="revenue" 
+                            radius={[6, 6, 0, 0]}
+                            animationDuration={1500}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell 
+                                    key={`cell-${index}`} 
+                                    fill={index === data.length - 1 ? 'var(--accent)' : 'rgba(59, 130, 246, 0.3)'} 
+                                    className="hover:fill-accent transition-colors duration-300"
+                                />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+
+            {/* Visual Flair */}
+            <div className="absolute -top-20 -left-20 w-60 h-60 bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
+        </div>
     );
 };
 

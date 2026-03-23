@@ -12,5 +12,14 @@ export const getMyBusiness = async () => {
 
 export const updateBusiness = async (id, data) => {
     const response = await api.put(`/business/${id}`, data);
+    
+    // Sync with local storage user object
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        user.business = { ...user.business, ...response.data };
+        localStorage.setItem('user', JSON.stringify(user));
+    }
+    
     return response.data;
 };

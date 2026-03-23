@@ -17,6 +17,14 @@ const businessSchema = new mongoose.Schema(
             type: String,
             default: "Asia/Kolkata",
         },
+        currency: {
+            type: String,
+            default: "USD",
+        },
+        locale: {
+            type: String,
+            default: "en-US",
+        },
         owner: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
@@ -25,8 +33,20 @@ const businessSchema = new mongoose.Schema(
         apiKey: {
             type: String,
             unique: true,
-            default: () => crypto.randomBytes(24).toString("hex")
+            default: () => "sk_live_" + crypto.randomBytes(24).toString("hex")
         },
+        publicKey: {
+            type: String,
+            unique: true,
+            default: () => "pk_live_" + crypto.randomBytes(24).toString("hex")
+        },
+        allowedDomains: [
+            {
+                type: String,
+                trim: true,
+                lowercase: true
+            }
+        ],
         aiCredits: {
             type: Number,
             default: 1, // Free trial for one time demo

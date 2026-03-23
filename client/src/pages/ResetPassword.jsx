@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import GlassCard from '../components/ui/GlassCard';
+
 import Button from '../components/ui/Button';
 import api from '../services/api';
 import { Lock, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
@@ -45,64 +45,67 @@ const ResetPassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            {/* Background Effects */}
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Professional Background Elements */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[150px] rounded-full" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[150px] rounded-full" />
+                <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/10 blur-[180px] rounded-full animate-pulse-slow" />
+                <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#10b981]/10 blur-[180px] rounded-full animate-pulse-slow" />
             </div>
 
-            <GlassCard className="w-full max-w-md relative z-10 p-8">
+            <div className="w-full max-w-md relative z-10 p-10 bg-white/80 dark:bg-[#1a1a1a]/95 backdrop-blur-2xl rounded-[24px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border border-[#e5e7eb] dark:border-[#2a2a2a] transition-all duration-500">
                 {status !== 'success' && (
-                    <Link to="/login" className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-6">
-                        <ArrowLeft size={16} className="mr-2" /> Back to Login
+                    <Link to="/login" className="inline-flex items-center text-[10px] font-black text-[#64748b] dark:text-[#94a3b8] hover:text-[#3b82f6] transition-all mb-8 group uppercase tracking-[0.2em]">
+                        <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Authorization
                     </Link>
                 )}
 
-                <div className="mb-8">
-                    <h1 className="text-3xl font-black text-white italic tracking-tighter mb-2">New Password</h1>
-                    <p className="text-gray-400 text-sm">Secure your account with a strong password.</p>
+                <div className="mb-10">
+                    <h1 className="text-4xl font-black text-[#0f172a] dark:text-[#f8fafc] italic tracking-tight mb-3 uppercase">Security</h1>
+                    <p className="text-[#64748b] dark:text-[#94a3b8] text-xs font-bold leading-relaxed uppercase tracking-wider">Initialize credential restoration sequence.</p>
                 </div>
 
                 {status === 'success' ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 text-center"
+                        className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-8 text-center"
                     >
-                        <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle size={24} className="text-green-400" />
+                        <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle size={32} className="text-green-500" />
                         </div>
-                        <h3 className="text-white font-bold mb-2">Password Reset!</h3>
-                        <p className="text-sm text-gray-300 mb-4">Your password has been successfully updated.</p>
-                        <p className="text-xs text-gray-500">Redirecting to login...</p>
+                        <h3 className="text-foreground font-bold text-lg mb-2">Password Reset!</h3>
+                        <p className="text-sm text-muted-foreground font-medium mb-6">Your password has been successfully updated.</p>
+                        <div className="flex items-center justify-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Redirecting to Login</p>
+                        </div>
                     </motion.div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">New Password</label>
+                        <div className="space-y-2">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">New Password</label>
                             <div className="relative group">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-white transition-colors" size={18} />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
                                 <input
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
+                                    className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
                                     placeholder="••••••••"
                                     required
                                 />
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Confirm Password</label>
+                        <div className="space-y-2">
+                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Confirm New Password</label>
                             <div className="relative group">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-white transition-colors" size={18} />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
                                 <input
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
+                                    className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
                                     placeholder="••••••••"
                                     required
                                 />
@@ -119,14 +122,14 @@ const ResetPassword = () => {
                         <Button
                             type="submit"
                             variant="primary"
-                            className="w-full justify-center py-3"
+                            className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none"
                             disabled={status === 'loading'}
                         >
-                            {status === 'loading' ? 'Resetting...' : 'Set New Password'}
+                            {status === 'loading' ? 'SECURING ACCOUNT...' : 'REESTABLISH AUTHORIZATION'}
                         </Button>
                     </form>
                 )}
-            </GlassCard>
+            </div>
         </div>
     );
 };

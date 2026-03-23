@@ -2,17 +2,21 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 
 const Button = ({ children, variant = 'primary', className, ...props }) => {
+    // Professional Edition mapping to index.css classes
     const variants = {
-        primary: "bg-white text-black hover:bg-zinc-200 shadow-glow font-black uppercase tracking-widest",
-        secondary: "bg-white/5 border border-white/10 text-white hover:bg-white/10",
-        ghost: "bg-transparent hover:bg-white/5 text-muted hover:text-white",
+        primary: "btn-primary",
+        secondary: "btn-secondary",
+        ghost: "bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground",
+        outline: "btn-secondary", // Mapping outline to btn-secondary for professional consistency
     };
+
+    const variantClass = variant ? variants[variant] : "";
 
     return (
         <button
             className={cn(
-                "px-4 py-2 rounded-xl font-medium transition-all duration-200 active:scale-95 flex items-center justify-center gap-2",
-                variants[variant],
+                "active:scale-95 transition-all duration-200", 
+                variantClass,
                 className
             )}
             {...props}

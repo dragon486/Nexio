@@ -8,7 +8,8 @@ import {
     generateFollowup,
     sendMessage,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    updateLead
 } from "../controllers/lead.controller.js";
 import { verifyApiKey } from "../middlewares/apiKeyMiddleware.js";
 
@@ -23,6 +24,7 @@ router.get("/", protect, getLeads);
 router.get("/:id", protect, getLead);
 router.patch("/all/read", protect, markAllAsRead);
 router.patch("/:id/read", protect, markAsRead);
+router.patch("/:id", protect, updateLead);
 router.post("/:id/generate-followup", protect, generateFollowup);
 router.post("/:id/message", protect, sendMessage);
 

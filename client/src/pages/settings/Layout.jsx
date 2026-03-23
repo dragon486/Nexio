@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { User, Building, Cpu, CreditCard, Users, ChevronRight, Zap } from 'lucide-react';
 import { cn } from '../../lib/utils'; // Adjust based on actual path
-import GlassCard from '../../components/ui/GlassCard';
+
 
 const SettingsLayout = () => {
     const navItems = [
@@ -16,36 +16,36 @@ const SettingsLayout = () => {
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
-            <div className="flex items-center text-sm text-gray-400 mb-6">
+            <div className="flex items-center text-sm text-muted-foreground mb-6">
                 <span>Settings</span>
                 <ChevronRight size={14} className="mx-2" />
-                <span className="text-white">Management</span>
+                <span className="text-foreground font-bold">Management</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Settings Sidebar */}
                 <div className="md:col-span-3">
-                    <GlassCard className="p-2 space-y-1">
+                    <div className="bg-white dark:bg-[#1a1a1a] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-[12px] p-2 space-y-1 shadow-sm transition-all duration-300">
                         {navItems.map((item) => (
                             <NavLink
                                 key={item.path}
                                 to={item.disabled ? '#' : item.path}
                                 className={({ isActive }) => cn(
                                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                                    item.disabled ? "opacity-50 cursor-not-allowed text-gray-600" : (
+                                    item.disabled ? "opacity-40 cursor-not-allowed text-muted-foreground" : (
                                         isActive
-                                            ? "bg-primary/10 text-white border border-primary/20 shadow-sm"
-                                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                                            ? "bg-[#3b82f6] text-white shadow-lg shadow-blue-500/20 font-black tracking-tight"
+                                            : "text-[#64748b] dark:text-[#94a3b8] hover:text-[#0f172a] dark:hover:text-[#f8fafc] hover:bg-[#fafafa] dark:hover:bg-[#1a1a1a]/80"
                                     )
                                 )}
                                 onClick={e => item.disabled && e.preventDefault()}
                             >
                                 <item.icon size={16} />
                                 {item.label}
-                                {item.disabled && <span className="ml-auto text-[10px] uppercase bg-white/5 px-1.5 py-0.5 rounded border border-white/5">Soon</span>}
+                                {item.disabled && <span className="ml-auto text-[8px] font-black uppercase bg-[#fafafa] dark:bg-[#0f0f0f] px-1.5 py-0.5 rounded border border-[#e5e7eb] dark:border-[#2a2a2a] text-[#94a3b8]">Coming Soon</span>}
                             </NavLink>
                         ))}
-                    </GlassCard>
+                    </div>
                 </div>
 
                 {/* Content Area */}
