@@ -52,7 +52,7 @@ const IntroBranding = ({ onComplete }) => {
                     >
                         {/* Auto-Play Blueprint Logo */}
                         <div className="mb-12 relative">
-                            <svg className="w-24 h-24 md:w-32 md:h-32 text-primary" viewBox="0 0 100 100">
+                            <svg className="w-24 h-24 md:w-32 md:h-32 text-foreground dark:text-white" viewBox="0 0 100 100">
                                 <motion.rect 
                                     x="15" y="35" width="70" height="30" 
                                     fill="none" stroke="currentColor" strokeWidth="1.5" 
@@ -81,7 +81,7 @@ const IntroBranding = ({ onComplete }) => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: [0, 0.4, 0.2] }}
                                 transition={{ delay: 1.8, duration: 1 }}
-                                className="absolute inset-0 bg-primary/20 blur-3xl rounded-full -z-10"
+                                className="absolute inset-0 bg-primary/20 dark:bg-white/10 blur-3xl rounded-full -z-10"
                             />
                         </div>
 
@@ -107,7 +107,7 @@ const IntroBranding = ({ onComplete }) => {
                                     >
                                         {text}
                                     </motion.span>
-                                    {i < 2 && <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />}
+                                    {i < 2 && <div className="w-1.5 h-1.5 rounded-full bg-primary/20 dark:bg-white/20" />}
                                 </React.Fragment>
                             ))}
                         </div>

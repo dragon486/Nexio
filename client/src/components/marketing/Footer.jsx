@@ -79,7 +79,7 @@ const Footer = () => {
                         </p>
                         <div className="flex gap-3">
                             {[Twitter, Linkedin, Github].map((Icon, i) => (
-                                <a key={i} href="#" className="w-10 h-10 rounded-full bg-foreground/5 border border-foreground/5 flex items-center justify-center text-foreground hover:text-primary hover:border-primary/50 transition-all shadow-sm">
+                                <a key={i} href="#" className="w-10 h-10 rounded-full bg-foreground/5 border border-foreground/5 flex items-center justify-center text-foreground hover:text-primary dark:hover:text-white hover:border-primary/50 dark:hover:border-white/50 transition-all shadow-sm">
                                     <Icon size={18} />
                                 </a>
                             ))}
@@ -89,29 +89,29 @@ const Footer = () => {
                     <div>
                         <h4 className="font-bold text-foreground mb-6">Product</h4>
                         <ul className="space-y-4 text-sm text-muted-foreground">
-                            <li><Link to="/features" className="hover:text-primary transition-colors">Features</Link></li>
-                            <li><Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
-                            <li><Link to="/demo" className="hover:text-primary transition-colors">Interactive Demo</Link></li>
-                            <li><Link to="/changelog" className="hover:text-primary transition-colors">Changelog</Link></li>
+                            <li><Link to="/features" className="hover:text-primary dark:hover:text-white transition-colors">Features</Link></li>
+                            <li><Link to="/pricing" className="hover:text-primary dark:hover:text-white transition-colors">Pricing</Link></li>
+                            <li><Link to="/demo" className="hover:text-primary dark:hover:text-white transition-colors">Interactive Demo</Link></li>
+                            <li><Link to="/changelog" className="hover:text-primary dark:hover:text-white transition-colors">Changelog</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold text-foreground mb-6">Company</h4>
                         <ul className="space-y-4 text-sm text-muted-foreground">
-                            <li><Link to="/about" className="hover:text-primary transition-colors">About</Link></li>
-                            <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
-                            <li><Link to="/careers" className="hover:text-primary transition-colors">Careers</Link></li>
-                            <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+                            <li><Link to="/about" className="hover:text-primary dark:hover:text-white transition-colors">About</Link></li>
+                            <li><Link to="/blog" className="hover:text-primary dark:hover:text-white transition-colors">Blog</Link></li>
+                            <li><Link to="/careers" className="hover:text-primary dark:hover:text-white transition-colors">Careers</Link></li>
+                            <li><Link to="/contact" className="hover:text-primary dark:hover:text-white transition-colors">Contact</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold text-foreground mb-6">Legal</h4>
                         <ul className="space-y-4 text-sm text-muted-foreground">
-                            <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link></li>
-                            <li><Link to="/terms" className="hover:text-primary transition-colors">Terms</Link></li>
-                            <li><Link to="/security" className="hover:text-primary transition-colors">Security</Link></li>
+                            <li><Link to="/privacy" className="hover:text-primary dark:hover:text-white transition-colors">Privacy</Link></li>
+                            <li><Link to="/terms" className="hover:text-primary dark:hover:text-white transition-colors">Terms</Link></li>
+                            <li><Link to="/security" className="hover:text-primary dark:hover:text-white transition-colors">Security</Link></li>
                         </ul>
                     </div>
                 </div>

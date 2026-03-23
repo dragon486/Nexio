@@ -74,12 +74,12 @@ const Features = () => {
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                                 
                                 <div className="relative z-10">
-                                    <div className="feature-icon group-hover:bg-primary group-hover:text-background group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/5" data-icon={feature.icon}></div>
-                                    <h3 className="group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
+                                    <div className="feature-icon group-hover:bg-primary dark:group-hover:bg-white group-hover:text-background dark:group-hover:text-[#0a0a0a] group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/5" data-icon={feature.icon}></div>
+                                    <h3 className="group-hover:text-primary dark:group-hover:text-white transition-colors duration-300">{feature.title}</h3>
                                     <p className="font-medium opacity-80 group-hover:opacity-100 transition-opacity">{feature.description}</p>
                                     
                                     {/* Reveal detail line */}
-                                    <div className="mt-8 h-[2px] w-0 bg-primary group-hover:w-full transition-all duration-700 opacity-20" />
+                                    <div className="mt-8 h-[2px] w-0 bg-primary dark:bg-white group-hover:w-full transition-all duration-700 opacity-20" />
                                 </div>
                             </motion.div>
                         </motion.div>

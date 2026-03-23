@@ -17,12 +17,14 @@ const Solutions = () => {
             description: "Convert trial users into paid customers with personalized AI nurture sequences. Seamlessly bridge the gap between signup and activation.",
             icon: Cpu,
             color: "rgba(168, 85, 247, 0.5)", // Purple
+            comingSoon: true
         },
         {
             title: "E-commerce Recovery",
             description: "Rescue abandoned carts and answer product questions in real-time. Boost conversion rates by 30% with intelligent WhatsApp assistance.",
             icon: ShoppingBag,
             color: "rgba(16, 185, 129, 0.5)", // Emerald
+            comingSoon: true
         }
     ];
 
@@ -69,7 +71,7 @@ const Solutions = () => {
                                         style={{ backgroundColor: sol.color }}
                                     />
                                     
-                                    <div className="flex justify-between items-start mb-10 text-muted-foreground group-hover:text-primary transition-colors">
+                                    <div className="flex justify-between items-start mb-10 text-muted-foreground group-hover:text-foreground dark:group-hover:text-white transition-colors">
                                         <div className="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-500">
                                             <sol.icon size={32} />
                                         </div>
@@ -81,14 +83,22 @@ const Solutions = () => {
                                         {sol.description}
                                     </p>
 
-                                    <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-primary/40 uppercase group-hover:text-primary transition-colors">
-                                        <span>Deploy Architecture</span>
-                                        <motion.div 
-                                            animate={{ x: [0, 5, 0] }}
-                                            transition={{ duration: 1.5, repeat: Infinity }}
-                                        >
-                                            →
-                                        </motion.div>
+                                    <div className="flex flex-col gap-2 mt-auto">
+                                        {sol.comingSoon ? (
+                                            <div className="inline-flex items-center justify-center w-full px-4 py-2 mt-4 text-xs font-bold tracking-widest uppercase border rounded-lg text-foreground/40 dark:text-white/40 border-foreground/10 dark:border-white/10 bg-foreground/5 dark:bg-white/5 cursor-not-allowed">
+                                                Coming Soon
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-primary/40 dark:text-white/40 uppercase group-hover:text-foreground dark:group-hover:text-white transition-colors">
+                                                <span>Deploy Architecture</span>
+                                                <motion.div 
+                                                    animate={{ x: [0, 5, 0] }}
+                                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                                >
+                                                    →
+                                                </motion.div>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             </GlassCard>

@@ -53,7 +53,7 @@ const AnalyticsPreview = () => {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold tracking-widest text-primary mb-8 uppercase">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-white/10 border border-primary/20 dark:border-white/20 text-xs font-bold tracking-widest text-primary dark:text-white mb-8 uppercase">
                         <TrendingUp size={14} />
                         <span>Exponential Growth Architecture</span>
                     </div>
@@ -76,9 +76,9 @@ const AnalyticsPreview = () => {
                                 whileHover={{ y: -5 }}
                                 className="p-8 rounded-3xl bg-surface/50 dark:bg-[#1a1a1a]/50 border border-border/10 dark:border-white/10 backdrop-blur-md shadow-xl transition-all hover:border-primary/20 group"
                             >
-                                <div className="text-4xl font-black text-foreground mb-2 tracking-tighter group-hover:text-primary transition-colors">{stat.value}</div>
+                                <div className="text-4xl font-black text-foreground mb-2 tracking-tighter group-hover:text-primary dark:group-hover:text-white transition-colors">{stat.value}</div>
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mb-1">{stat.label}</div>
-                                <div className="text-[10px] text-primary/40 font-bold uppercase tracking-wider">{stat.sub}</div>
+                                <div className="text-[10px] text-primary/40 dark:text-white/40 font-bold uppercase tracking-wider">{stat.sub}</div>
                             </motion.div>
                         ))}
                     </div>
@@ -151,7 +151,7 @@ const AnalyticsPreview = () => {
                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                         className="absolute -bottom-10 -right-10 p-6 bg-surface dark:bg-[#1a1a1a] border border-border/50 dark:border-white/10 rounded-2xl shadow-3xl flex items-center gap-4 z-30"
                     >
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-white/10 flex items-center justify-center text-primary dark:text-white shadow-inner">
                             <Zap size={24} fill="currentColor" className="opacity-80" />
                         </div>
                         <div>

@@ -35,7 +35,7 @@ const Pricing = () => {
     return (
         <section id="pricing" className="py-32 md:py-48 px-6 relative overflow-hidden">
             {/* Dynamic Background Atmosphere */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[800px] bg-primary/10 blur-[150px] rounded-full pointer-events-none animate-pulse" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[800px] bg-primary/10 dark:bg-white/5 blur-[150px] rounded-full pointer-events-none animate-pulse" />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div 
@@ -82,14 +82,14 @@ const Pricing = () => {
                                         
                                         {/* Reveal Underglow for Popular Card */}
                                         {plan.popular && (
-                                            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/20 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-700" />
+                                            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/20 dark:bg-white/10 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-700" />
                                         )}
                                     </div>
                                     
                                     <div className="mb-10 relative z-10">
-                                        <h3 className="text-sm font-bold text-primary tracking-[0.3em] uppercase mb-6 group-hover:scale-105 transition-transform origin-left">{plan.name}</h3>
+                                        <h3 className="text-sm font-bold text-primary dark:text-white tracking-[0.3em] uppercase mb-6 group-hover:scale-105 transition-transform origin-left">{plan.name}</h3>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-6xl font-black text-foreground tracking-tighter group-hover:text-primary transition-colors">{plan.price}</span>
+                                            <span className="text-6xl font-black text-foreground tracking-tighter group-hover:text-primary dark:group-hover:text-white transition-colors">{plan.price}</span>
                                             <span className="text-muted-foreground/60 font-bold text-sm uppercase tracking-wider">/month</span>
                                         </div>
                                         <p className="text-[15px] text-muted-foreground mt-6 font-medium leading-relaxed">{plan.description}</p>
@@ -98,7 +98,7 @@ const Pricing = () => {
                                     <ul className="space-y-5 mb-12 flex-grow relative z-10">
                                         {plan.features.map((feature, i) => (
                                             <li key={i} className="flex items-center gap-4 text-[14px] text-foreground font-semibold group-hover:translate-x-1 transition-transform" style={{ transitionDelay: `${i * 50}ms` }}>
-                                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 group-hover:bg-primary group-hover:text-background transition-all duration-300">
+                                                <div className="w-6 h-6 rounded-full bg-primary/10 dark:bg-white/10 flex items-center justify-center text-primary dark:text-white flex-shrink-0 group-hover:bg-primary dark:group-hover:bg-white group-hover:text-background dark:group-hover:text-[#0a0a0a] transition-all duration-300">
                                                     <Check size={14} strokeWidth={4} />
                                                 </div>
                                                 <span className="opacity-80 group-hover:opacity-100 transition-opacity">{feature}</span>
@@ -117,7 +117,7 @@ const Pricing = () => {
 
                                     {/* Reveal Underglow for Popular Card */}
                                     {plan.popular && (
-                                        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/20 blur-[60px] rounded-full pointer-events-none group-hover:scale-150 transition-transform duration-700" />
+                                        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/20 dark:bg-white/10 blur-[60px] rounded-full pointer-events-none group-hover:scale-150 transition-transform duration-700" />
                                     )}
                                 </GlassCard>
                             </motion.div>

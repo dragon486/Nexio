@@ -148,7 +148,7 @@ const Navbar = () => {
                         </Link>
                     ) : (
                         <>
-                            <Link to="/login" className="hidden md:block text-sm font-medium hover:text-primary transition-colors">
+                            <Link to="/login" className="hidden md:block text-sm font-medium hover:text-primary dark:hover:text-white transition-colors">
                                 Sign In
                             </Link>
                             <Link 

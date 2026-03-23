@@ -16,7 +16,7 @@ const BrandingSection = () => {
                     transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                     className="mb-12"
                 >
-                    <svg className="w-24 h-24 md:w-40 md:h-40 text-primary" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-24 h-24 md:w-40 md:h-40 text-foreground dark:text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <motion.path 
                             d="M 20 50 L 38 50 L 38 42 L 50 42 L 50 58 L 62 58 L 62 50 L 80 50" 
                             stroke="currentColor" 
@@ -88,9 +88,9 @@ const BrandingSection = () => {
                     className="flex items-center gap-4 md:gap-10 text-[10px] md:text-base font-bold tracking-[0.6em] text-muted-foreground uppercase opacity-60"
                 >
                     <motion.span whileHover={{ letterSpacing: "1em", color: "var(--color-primary)" }} transition={{ duration: 0.3 }}>Precision</motion.span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/20 dark:bg-white/20" />
                     <motion.span whileHover={{ letterSpacing: "1em", color: "var(--color-primary)" }} transition={{ duration: 0.3 }}>Architecture</motion.span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary/20 dark:bg-white/20" />
                     <motion.span whileHover={{ letterSpacing: "1em", color: "var(--color-primary)" }} transition={{ duration: 0.3 }}>Intelligence</motion.span>
                 </motion.div>
             </div>
