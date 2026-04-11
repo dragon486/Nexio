@@ -6,27 +6,27 @@ import GlassCard from '../ui/GlassCard';
 
 const plans = [
     {
-        name: "Starter",
-        price: "$0",
-        description: "Perfect for testing the waters.",
-        features: ["1 AI Agent", "100 Leads / month", "Basic Analytics", "Email Support"],
-        cta: "Start Free",
+        name: "Founder Starter",
+        price: "₹2,999",
+        description: "Perfect for early adopters and small shops.",
+        features: ["1 WhatsApp AI Bot", "500 Conversations / month", "Standard AI Personality", "Lead Scoring & CRM", "7-Day History"],
+        cta: "Claim Founder Price",
         popular: false
     },
     {
-        name: "Growth",
-        price: "$49",
-        description: "For scaling startups.",
-        features: ["3 AI Agents", "1,000 Leads / month", "Advanced Analytics", "WhatsApp Integration", "Priority Support"],
-        cta: "Get Started",
+        name: "Pro Intelligence",
+        price: "₹14,999",
+        description: "For scaling growth-led businesses.",
+        features: ["1 WhatsApp AI Bot", "2,500 Conversations / month", "Custom AI Tone & Knowledge", "Revenue Forecasting", "Full History + Data Export", "Priority Support"],
+        cta: "Go Pro",
         popular: true
     },
     {
-        name: "Scale",
-        price: "$149",
+        name: "Enterprise",
+        price: "₹25,000",
         description: "For high-volume sales teams.",
-        features: ["Unlimited Agents", "Unlimited Leads", "Custom Integrations", "Dedicated Account Manager", "SLA Support"],
-        cta: "Contact Sales",
+        features: ["Unlimited AI Bots", "Unlimited Conversations", "Custom API Integrations", "Call AI & Transcription", "Dedicated Account Manager", "White-label Dashboard"],
+        cta: "Contact Growth Team",
         popular: false
     }
 ];
@@ -45,10 +45,10 @@ const Pricing = () => {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className="text-center mb-24"
                 >
-                    <h2 className="text-3xl md:text-6xl font-black text-foreground mb-6 tracking-tighter">
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">
                         Simple, transparent pricing.
                     </h2>
-                    <p className="text-[18px] md:text-[21px] text-muted-foreground max-w-2xl mx-auto font-medium">
+                    <p className="text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto tracking-normal">
                         Choose the plan that's right for your business. No hidden fees.
                     </p>
                 </motion.div>
@@ -108,8 +108,12 @@ const Pricing = () => {
 
                                     <div className="relative z-10">
                                         <Button
-                                            variant={plan.popular ? 'primary' : 'secondary'}
-                                            className="w-full justify-center btn-large shadow-xl hover:shadow-primary/30"
+                                            className={`${plan.popular ? 'btn-primary' : 'btn-secondary'} w-full justify-center h-14 text-base`}
+                                            onClick={() => {
+                                                const message = `Hi! I'm interested in the NEXIO ${plan.name} plan ( ${plan.price} ). Can you tell me more about how to get started?`;
+                                                const whatsappUrl = `https://wa.me/918848258969?text=${encodeURIComponent(message)}`;
+                                                window.open(whatsappUrl, '_blank');
+                                            }}
                                         >
                                             {plan.cta}
                                         </Button>

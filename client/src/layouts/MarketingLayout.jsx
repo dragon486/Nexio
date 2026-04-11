@@ -5,7 +5,7 @@ import Footer from '../components/marketing/Footer';
 
 const MarketingLayout = () => {
     return (
-        <div className="min-h-screen bg-transparent text-foreground font-sans selection:bg-purple-500/30 overflow-x-hidden">
+        <div className="min-h-screen bg-transparent text-foreground font-sans selection:bg-purple-500/30">
             <Navbar />
 
             <main className="relative z-10">

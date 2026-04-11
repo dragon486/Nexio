@@ -31,7 +31,7 @@ def check_lead_capture():
     mock_payload = {
         "firstName": "Smoke",
         "lastName": "Test",
-        "email": "smoke@arlo.ai",
+        "email": "smoke@nexio.ai",
         "phone": "+123456789",
         "source": "Automated Script"
     }
@@ -44,7 +44,7 @@ def check_lead_capture():
         print(f"❌ SECURITY RISK: Lead capture accepted a request without an API key.")
 
 if __name__ == "__main__":
-    print("🚀 Arlo.ai Professional Smoke Test 🚀")
+    print("🚀 NEXIO Professional Smoke Test 🚀")
     print("-" * 40)
     check_health()
     check_security()

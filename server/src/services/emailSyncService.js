@@ -2,8 +2,11 @@ import { google } from "googleapis";
 import User from "../models/User.js";
 import Lead from "../models/Lead.js";
 import { emitToBusiness } from "../utils/socket.js";
+import { runtimeConfig } from "../config/env.js";
 
 const SYNC_INTERVAL = 60000; // 60 seconds
+let syncIntervalId = null;
+let syncInFlight = false;
 
 // Helper to decode Gmail message parts safely
 const decodeBase64 = (data) => {
@@ -75,13 +78,16 @@ export const syncEmails = async () => {
 
         // 1. Find all users who have an active Gmail connection with the readonly scope.
         // If they haven't re-consented, the API call will fail gracefully for them.
-        const users = await User.find({ gmailRefreshToken: { $exists: true, $ne: "" } });
+        const users = await User.find({
+            gmailRefreshToken: { $exists: true, $ne: "" },
+            gmailStatus: { $ne: "error" }
+        });
 
         for (const user of users) {
             try {
                 const oauth2Client = new google.auth.OAuth2(
-                    process.env.GOOGLE_CLIENT_ID,
-                    process.env.GOOGLE_CLIENT_SECRET
+                    runtimeConfig.google.clientId,
+                    runtimeConfig.google.clientSecret
                 );
 
                 oauth2Client.setCredentials({
@@ -179,7 +185,7 @@ export const syncEmails = async () => {
                             console.log(`[EmailSync] Lead ${lead.name} | Extracted body length: ${bodyText?.length}`);
 
                             if (bodyText) {
-                                // Prevent echoing automated emails that Arlo JUST sent
+                                // Prevent echoing automated emails that NEXIO JUST sent
                                 // by seeing if a heavily similar text is already in history
                                 const isDuplicate = lead.conversationHistory.some(h => {
                                     // Parse stringified JSON if it was an AI email draft
@@ -262,7 +268,37 @@ async function getBusinessIdForUser(userId) {
 }
 
 export const initEmailSyncService = () => {
-    syncEmails(); // Run immediately on boot
-    setInterval(syncEmails, SYNC_INTERVAL);
+    if (syncIntervalId) {
+        return;
+    }
+
+    if (!runtimeConfig.google.clientId || !runtimeConfig.google.clientSecret) {
+        console.warn("⚠️ [EmailSync] Google OAuth credentials missing. Gmail polling service not started.");
+        return;
+    }
+
+    const runCycle = async () => {
+        if (syncInFlight) {
+            console.warn("⚠️ [EmailSync] Previous polling cycle still in progress. Skipping overlap.");
+            return;
+        }
+
+        syncInFlight = true;
+        try {
+            await syncEmails();
+        } finally {
+            syncInFlight = false;
+        }
+    };
+
+    runCycle();
+    syncIntervalId = setInterval(runCycle, SYNC_INTERVAL);
     console.log(`⏰ [EmailSync] Service initialized. Polling every ${SYNC_INTERVAL / 1000}s.`);
+};
+
+export const stopEmailSyncService = () => {
+    if (syncIntervalId) {
+        clearInterval(syncIntervalId);
+        syncIntervalId = null;
+    }
 };

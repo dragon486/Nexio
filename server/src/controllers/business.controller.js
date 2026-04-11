@@ -1,5 +1,8 @@
 import Business from "../models/Business.js";
 import crypto from 'crypto';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdfParse = require("pdf-parse");
 
 export const createBusiness = async (req, res) => {
     try {
@@ -49,23 +52,29 @@ export const updateBusiness = async (req, res) => {
         const { id } = req.params;
         const updates = req.body;
 
-        // Special handling for nested settings to avoid overwriting the whole object
+        // Special handling for nested objects to avoid overwriting the whole object
         let finalUpdates = { ...updates };
+        
+        const flatten = (obj, prefix) => {
+            for (const key in obj) {
+                const value = obj[key];
+                const path = `${prefix}.${key}`;
+                if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+                    flatten(value, path);
+                } else {
+                    finalUpdates[path] = value;
+                }
+            }
+        };
+
         if (updates.settings) {
             delete finalUpdates.settings;
-            // Recursively flatten the settings object for Mongoose $set
-            const flatten = (obj, prefix = 'settings') => {
-                for (const key in obj) {
-                    const value = obj[key];
-                    const path = `${prefix}.${key}`;
-                    if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
-                        flatten(value, path);
-                    } else {
-                        finalUpdates[path] = value;
-                    }
-                }
-            };
-            flatten(updates.settings);
+            flatten(updates.settings, 'settings');
+        }
+
+        if (updates.whatsappConfig) {
+            delete finalUpdates.whatsappConfig;
+            flatten(updates.whatsappConfig, 'whatsappConfig');
         }
 
         const business = await Business.findOneAndUpdate(
@@ -81,5 +90,49 @@ export const updateBusiness = async (req, res) => {
         res.json(business);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+};
+
+export const uploadKnowledgeBase = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ message: "No PDF file uploaded" });
+        }
+
+        if (file.mimetype !== "application/pdf") {
+            return res.status(400).json({ message: "Only PDF files are supported" });
+        }
+
+        // Parse PDF text
+        const pdfData = await pdfParse(file.buffer);
+        let extractedText = pdfData.text || "";
+        
+        // Clean up excessive whitespace
+        extractedText = extractedText.replace(/\s+/g, ' ').trim();
+
+        // Find business and append text
+        const business = await Business.findOne({ _id: id, owner: req.user._id });
+        if (!business) {
+            return res.status(404).json({ message: "Business not found" });
+        }
+
+        // Keep existing text and append new text
+        const currentKb = business.settings?.knowledgeBase || "";
+        const updatedKb = currentKb ? `${currentKb}\n\n[Appended PDF Data]:\n${extractedText}` : extractedText;
+
+        business.settings = {
+            ...business.settings,
+            knowledgeBase: updatedKb
+        };
+
+        await business.save();
+
+        res.json({ message: "Knowledge base updated successfully", business });
+    } catch (error) {
+        console.error("PDF Parsing Error:", error);
+        res.status(500).json({ error: "Failed to process PDF file" });
     }
 };

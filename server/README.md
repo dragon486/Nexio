@@ -1,11 +1,11 @@
-# 🚀 Arlo.ai — AI Lead & Sales Automation Platform
+# 🚀 NEXIO — AI Lead & Sales Automation Platform
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
 ![React](https://img.shields.io/badge/react-18.x-61dafb.svg)
 ![MongoDB](https://img.shields.io/badge/mongodb-6.x-green.svg)
 
-Arlo.ai is a **full-stack AI-powered lead generation and sales automation web application** designed to automate customer acquisition, engagement, follow-ups, and sales workflows using Artificial Intelligence.
+NEXIO is a **full-stack AI-powered lead generation and sales automation web application** designed to automate customer acquisition, engagement, follow-ups, and sales workflows using Artificial Intelligence.
 
 The platform helps businesses **capture leads, qualify prospects, automate conversations, schedule follow-ups, and drive conversions** — all without manual sales effort.
 
@@ -59,7 +59,7 @@ React (Client) → Express API → MongoDB
 ## 📁 Project Structure
 
 ```
-arlo-ai/
+nexio-ai/
 ├── client/                 # React Frontend
 │   ├── src/
 │   │   ├── components/
@@ -102,8 +102,8 @@ arlo-ai/
 ### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/arlo-ai.git
-cd arlo-ai
+git clone https://github.com/yourusername/nexio-ai.git
+cd nexio-ai
 ```
 
 ### 2️⃣ Backend Setup

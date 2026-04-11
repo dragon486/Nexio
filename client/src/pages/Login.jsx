@@ -15,14 +15,10 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const data = await login(email, password);
-            if (data.business && !data.business.onboardingCompleted) {
-                navigate('/onboarding');
-            } else {
-                navigate('/dashboard');
-            }
-        } catch (err) {
-            setError('Invalid credentials');
+            await login(email, password);
+            navigate('/dashboard');
+        } catch (error) {
+            setError(error.response?.data?.message || 'Invalid credentials');
         }
     };
 
@@ -113,13 +109,13 @@ const Login = () => {
                             onSuccess={async (credentialResponse) => {
                                 try {
                                     const data = await googleLogin(credentialResponse.credential);
-                                    if (data.business && !data.business.onboardingCompleted) {
+                                    if (data.isNewUser) {
                                         navigate('/onboarding');
                                     } else {
                                         navigate('/dashboard');
                                     }
-                                } catch (err) {
-                                    setError('Google Login Failed');
+                                } catch (error) {
+                                    setError(error.response?.data?.message || 'Google Login Failed');
                                 }
                             }}
                             onError={() => {

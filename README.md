@@ -1,122 +1,125 @@
-# Arlo.ai - Enterprise AI Lead Management System
+# ⚡ Nexio - Enterprise AI Lead Management System
 
-Arlo.ai is a professional SaaS platform designed to capture, score, and automate lead follow-ups using advanced AI. Built with a "Pure Monochrome Black" aesthetic, it provides a premium, high-density dashboard for sales teams.
+[![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)](https://nexio.ai)
+[![Tech Stack](https://img.shields.io/badge/stack-MERN+%20Neural%20AI-orange.svg)](https://nexio.ai)
+[![AI Engine](https://img.shields.io/badge/AI-Gemini%20Flash%20v2-green.svg)](https://nexio.ai)
+[![Intelligence](https://img.shields.io/badge/Context-Long--Chain%20Memory-purple.svg)](https://nexio.ai)
 
-![Dashboard Overview](docs/dashboard_main.png)
+**Nexio** is a high-density, multi-tenant AI ecosystem designed for hyper-growth sales teams. It combines professional CRM capabilities with a distributed "Neural Persona" engine that captures, scores, and automates leads across Email, WhatsApp, and Web widgets with absolute resilience.
 
-## ✨ Platform Showcase
+---
 
-| CEO Cockpit (Dashboard) | leads Central |
+## 🖼️ Platform Showcase
+
+| 🌐 Neural Marketing Hub | 📊 Executive CEO Cockpit |
 | :--- | :--- |
-| ![Dashboard](docs/dashboard_main.png) | ![Leads](docs/dashboard_leads.png) |
+| ![Marketing Home](docs/marketing_home.png) | ![Executive Dashboard](docs/executive_dashboard.png) |
 
-| AI Lead Intelligence | Automations Center |
+| 🎯 Lead Desk (Unified Management) | 📈 Alpha Pipeline (Orchestration) |
 | :--- | :--- |
-| ![Lead Detail](docs/lead_detail.png) | ![Settings](docs/settings_automations.png) |
+| ![Lead Desk](docs/lead_desk.png) | ![AI Pipeline](docs/ai_pipeline.png) |
 
-| Real-time Alerts | Premium Aesthetics |
+| 📍 Nexio Local (Hyperlocal Node) | ⚙️ WhatsApp Bot Intelligence |
 | :--- | :--- |
-| ![Notifications](docs/notifications_dropdown.png) | Pure Monochrome Black theme with neon accents and high-density data visualizations. |
+| ![Hyperlocal Dashboard](docs/hyperlocal_dashboard.png) | ![WhatsApp Settings](docs/whatsapp_bot_settings.png) |
 
-## 🚀 Key Features
+---
 
-- **AI-Powered Lead Scoring**: Automatically analyze and score incoming leads based on intent and business fit.
-- **Arlo's Resilience Mode**: A local Python fallback brain that takes over when AI quotas are hit, ensuring 100% uptime for lead scoring. 🛡️🤖
-- **Fast-Fail Quota Cache**: Intelligently remembers API outages (Daily or Burst limits) and provides **zero-latency** routing to the local brain during outages. 🚀
-- **Resilience Analytics**: Tracks and displays the exact number of leads intelligently "saved" by the local brain directly on the CEO Cockpit dashboard. 📊
-- **Advanced Lead Filtering**: Professional, multi-criteria filtering on the Leads Central page, including specific views for "Local Brain Only" or "Cloud API Only" scoring. 🔍
-- **Auto-Pilot Mode**: Enable AI to automatically draft and send personalized follow-up emails and WhatsApp messages.
-- **Quota-Aware Alerts**: Smart detection of Daily vs Burst AI limits with high-impact themed modal alerts. ⚖️🚨
-- **Glassmorphic Dashboards**: Beautiful, high-performance UI components with real-time data visualization.
-- **Live Dashboard Updates**: Socket.io integration provides instant WebSockets updates for new leads and analytics without refreshing.
-- **Smart Notifications**: "White Flash" notification system to highlight high-priority unread activities.
-- **Enterprise Security**: Google OAuth 2.0 integration and secure JWT-based authentication.
-- **Two-Way Email Sync**: Allows users to connect their own Gmail accounts securely to send and automatically sync replies back to the CRM timeline.
-- **CRM Integration**: Seamlessly link leads to specific business accounts for multi-tenant data isolation.
+## 🏗️ System Design & Architecture
 
-## 🧱 System Architecture
+Nexio is architected for **Massive Parallelism** and **Intelligence Redundancy**.
 
-Arlo.ai follows a modern decoupled architecture designed for high throughput and intelligence:
-
+### 1. Unified System Topology
 ```mermaid
-graph TD
-    User((User)) -->|React SPA| Frontend[Frontend - Vite/React]
-    Frontend -->|REST API + JWT| Backend[Backend - Node/Express]
-    Backend -->|JSON Data| DB[(MongoDB)]
-    Backend -->|Async Task| AI[AI Engine - Google Gemini]
-    AI -- Quota Hit / Error --> Fallback[Resilience Mode - Local Python Brain]
-    AI -->|Structured JSON| Backend
-    Fallback -->|Sentiment/Intent Score| Backend
-    Backend -->|SMTP| EmailService[Email Service - Nodemailer]
-    Backend -->|Websocket/Polling| Notifications[Notification System]
+graph TB
+    subgraph "Ingress & Edge"
+        Visitor((Visitor)) -.->|Widget/WA| Edge[Cloudflare/Nginx Edge]
+        Owner((Executive)) -.->|React SPA| Edge
+    end
+
+    subgraph "Core Intelligence Cluster"
+        Edge --> Auth[Shield-Auth JWT/OAuth]
+        Auth --> Controllers[Logic Controllers]
+        
+        subgraph "Neural Decision Engine"
+            Controllers --> Gemini[Gemini v2 Flash]
+            Gemini -- Fallback --> Ollama[Local Llama Node]
+            Ollama -- Emergency --> Python[Heuristic Bridge]
+        end
+    end
+
+    subgraph "Nexio Local & Broadcasters"
+        Controllers --> LocalSvc[Hyperlocal Manager]
+        LocalSvc --> WA[Meta WhatsApp API]
+        LocalSvc --> Broadcast[Fan-out Engine]
+    end
+
+    subgraph "Persistence & Events"
+        Controllers --> Mongo[(MongoDB Cluster)]
+        Controllers --> Socket[Socket.io Real-time Bus]
+        Controllers --> Workers[Gmail Polling Workers]
+    end
 ```
 
-## 🧠 Core Functionality
+### 2. Multi-Tier Intelligence Flow
+```mermaid
+sequenceDiagram
+    participant I as Ingress (Lead/WA)
+    participant N as Neural Engine
+    participant P as Persona Memory
+    participant C as CRM Persistence
 
-### 1. AI Lead Intelligence & Scoring
-Every lead captured via the dashboard or external widget is processed by the **Arlo AI Engine**.
-- **Intent Analysis**: The AI reads the semantic meaning of the lead's message.
-- **Dynamic Scoring (0-100)**: Leads are ranked based on budget hints, urgency, and professional fit.
-- **Arlo's Resilience Mode (Local Brain)**: If the Gemini API reaches its daily quota or experiences latency, Arlo automatically switches to a local Python fallback (using `TextBlob` and custom heuristics) to ensure leads are still scored.
-- **Zero-Latency Fast-Fail**: Instead of repeatedly timing out on a broken API, Arlo caches quota limit hits (24h for daily, 60s for burst) and instantly routes all incoming leads straight to the local brain.
-- **Resilience Impact Analytics**: Every lead scored offline is tracked. The dashboard transparently shows the CEO exactly how many leads were saved by Arlo's self-healing capabilities.
-- **Contextual Memory**: Arlo maintains a `memorySummary` for every lead, allowing the AI to "remember" past interactions and provide cohesive follow-ups.
+    I->>N: Ingest Untrusted Lead Data
+    N->>P: Fetch Historical Context/Persona
+    P-->>N: Context Summary (Long-chain)
+    N->>N: Alpha Logic Analysis (Intent Score)
+    N->>C: Atomic Record Update
+    C->>I: Real-time UI Broadcast (Socket.io)
+```
 
-### 2. Auto-Pilot Automation
-The Automation Center allows businesses to operate 24/7.
-- **Confidence Thresholds**: Set a minimum AI score (e.g., 70+) before Auto-Pilot takes over.
-- **Dynamic AI Formatting**: The AI generates strictly separated `emailSubject` and `emailBody` fields, which the backend safely maps into heavily structured HTML emails with clean paragraph breaks (`<br>`).
-- **Multi-Channel Delivery**: Automatically sends drafted Emails and WhatsApp messages if enabled.
-- **Human-in-the-Loop**: Large drafts are presented in the "Conversation Memory" for manual editing before one-click sending.
-- **Manual Sync Tracking**: Manually sending a message securely locks onto new Gmail Thread IDs so that subsequent replies are accurately tethered to the lead's history.
+---
 
-### 3. Smart "White Flash" Notifications & Lead Management
-High-density tools ensure no hot lead is missed and the pipeline is pristine.
-- **The Pulse**: A glowing white aura appears on the top-bar notification bell when new high-priority leads arrive.
-- **Multi-Criteria Filtering**: The Leads Central page features an advanced search bar with safe-null handling and nested drop-downs for Status, Priority, and **Scoring Mode** (Cloud vs Local Brain).
-- **Read-Tracking**: Individual alerts are marked as "read" upon interaction, and the global pulse clears only when all critical activity is acknowledged.
+## 🚀 Key Modern Features
 
-### 4. Enterprise Integrations & Two-Way Sync
-Arlo is designed to integrate deeply with your existing communication workflow.
-- **Gmail OAuth Integration**: Connect your own Google account securely. Arlo will use your address to send automated follow-ups natively.
-- **Background Email Polling**: Arlo actively queries the Gmail API every 60 seconds to detect lead replies. Lead responses are instantly extracted, stripped of messy quote formatting, and appended to the lead's conversational timeline.
-- **Intelligent Duplicate Filter**: Arlo runs an AI safety check whenever it fetches emails, comparing incoming text against its own automated drafts to guarantee Arlo never "echoes" its own outgoing emails back into the chat.
-- **Bi-Directional Role Assignment**: If a lead replies, Arlo aligns the message to the left. If a business owner replies manually from their Gmail app on the go, Arlo intelligently detects the sender and aligns it to the right as an outbound message!
-- **Real-Time WebSockets**: Utilizing `Socket.io`, all updates (from incoming webhooks to background email syncs) are instantly pushed to the frontend, updating the CEO Cockpit Live Feed chronologically without any manual reloads.
+### 📍 Nexio Local (Hyperlocal Intelligence)
+Built for local businesses (Gyms, Salons, Retail), this specialized module allows for:
+- **Distributed Node Management**: Register multiple physical locations and manage them under one dashboard.
+- **WhatsApp Broadcast Engine**: Fan-out targeted messages (VIPs, Active Members) with cost-per-message logic.
+- **Intent-based Routing**: Inbound WhatsApp messages are analyzed for `intent` (Booking, Pricing, Support) and routed to specialized personas.
 
-## �️ Developer Documentation
+### 🧠 Alpha Logic & Neural Persona
+- **Neural Persona Training**: Upload PDF knowledge bases to train the AI's "internal brain."
+- **Emotional Alignment**: Configure the AI's tone (Professional, Soft, Aggressive) and response thresholds.
+- **Autonomous Recovery (Resilience)**: If the cloud API hits a quota limit, the local Ollama node takes over without interrupting the lead's experience.
 
-### API Endpoints (Core)
+### 📧 Two-Way Executive Sync
+- **Gmail Invisible Integration**: Background workers poll Gmail accounts to detect manual replies from owners, instantly aligning them in the CRM timeline using "Echo-Detection" to prevent looping.
+- **Contextual Drafts**: AI generates high-conversion drafts for every incoming lead, ready for 1-click execution.
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/leads` | Capture a new lead and trigger AI scoring. |
-| `GET` | `/api/leads` | Retrieve leads (sorted by score/priority). |
-| `POST` | `/api/leads/:id/generate-followup` | Re-trigger AI to generate a context-aware 2nd draft. |
-| `POST` | `/api/leads/:id/message` | Send a manual or edited AI draft via Email. |
-| `PATCH` | `/api/business/settings` | Update Auto-Pilot and AI Persona configurations. |
+---
 
-### Environment Variables Deep Dive
+## 🛠️ Performance Tech Stack
 
-- `GEMINI_API_KEY`: Powering the lead scoring and follow-up generation.
-- `JWT_SECRET`: Used for signing session tokens and multi-tenant isolation.
-- `MONGO_URI`: Primary database connection string (leads, users, businesses).
-- `SMTP_*`: Credentials for the automated outbound email engine.
+- **Frontend**: Vite + React 18 (Client-side Routing, Framer Motion for micro-animations).
+- **Backend**: Node.js 20+ (Express with structured middleware architecture).
+- **AI Infrastructure**: Google AI SDK + Local Python Bridge (TextBlob, Patterns).
+- **Messaging**: Meta Graph API (WhatsApp Business), Gmail API v1.
+- **Persistence**: MongoDB Atlas (Transactional isolation).
 
-## 📦 Installation & Deployment
+---
 
-### Prerequisites
-- Node.js (v18+)
-- Python 3.10+ (for Resilience Mode)
-- MongoDB Instance
-- Google Cloud Console Project (Auth)
-- Gmail App Password or SMTP Service
+## 📈 Engineering Roadmap & Scaling
 
-### Local Setup (Quickstart)
+1.  **Phase 1: Performance Node**
+    - Implementation of **Redis-backed Socket.io** for multi-server synchronization.
+    - Decoupling of **Gmail Sync Workers** into specialized independent containers.
+2.  **Phase 2: Global Expansion**
+    - Multi-region database replication for sub-50ms latency in Nexio Local.
+    - **OpenTelemetry** integration for precise latency tracing across the AI bridge.
+3.  **Phase 3: Parity Intelligence**
+    - Fine-tuning **DeepSeek/Llama 3** local nodes to match Gemini's intent accuracy.
 
-1.  **Server**: `cd server && npm install && npm run dev`
-2.  **Client**: `cd client && npm install && npm run dev`
-3.  **Seed Demo Data**: `cd server && node scripts/seedDemoData.js` (Resets your dashboard with professional sample leads).
+---
 
 ## 📄 License
-This project is licensed under the MIT License.
+Nexio is licensed under the **MIT License**. Build the future of AI CRM.

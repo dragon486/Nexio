@@ -33,6 +33,7 @@ class ErrorBoundary extends React.Component {
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from './lib/ThemeContext';
+import { HelmetProvider } from 'react-helmet-async';
 
 // NOTE: Replace with your actual Google Client ID
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
@@ -40,11 +41,13 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_C
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <ThemeProvider>
-        <ErrorBoundary>
-          <App />
-        </ErrorBoundary>
-      </ThemeProvider>
+      <HelmetProvider>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
+        </ThemeProvider>
+      </HelmetProvider>
     </GoogleOAuthProvider>
   </StrictMode>,
 )

@@ -19,6 +19,7 @@ const IntroBranding = ({ onComplete }) => {
         }, 3000);
 
         return () => {
+            clearTimeout(timer);
             document.body.style.overflow = '';
         };
     }, []);

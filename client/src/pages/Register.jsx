@@ -10,10 +10,13 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError('');
         try {
             const response = await register(name, email, password); // Assuming register returns a response object
             if (response.token) {
@@ -27,6 +30,8 @@ const Register = () => {
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -109,8 +114,8 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <Button type="submit" className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none">
-                        START FREE TRIAL
+                    <Button type="submit" disabled={loading} className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        {loading ? 'INITIALIZING...' : 'START FREE TRIAL'}
                     </Button>
                 </form>
 

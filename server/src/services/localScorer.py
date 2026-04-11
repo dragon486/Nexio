@@ -132,7 +132,13 @@ def safe_name(name: str) -> str:
     return re.sub(r"[^\w\s.'-]", "", cleaned)[:50] or "there"
 
 
-def build_email(priority: str, name: str) -> tuple[str, str]:
+def build_email(priority: str, name: str, source: str = "website") -> tuple[str, str]:
+    if source == "widget":
+        if priority in ["high", "medium"]:
+            return "Chat Reply", "I'm experiencing a bit of a system delay at this exact moment, but your request is important! Could you please drop your email or phone number here so our team can get right back to you with a direct answer?"
+        else:
+            return "Chat Reply", "I'm experiencing a bit of a system delay right now! I've saved your message for my team to review, but feel free to explore the site in the meantime."
+            
     greeting = f"Hi {name},\n\n"
 
     if priority == "high":
@@ -168,6 +174,7 @@ def analyze_lead(data):
     raw_name = data.get("name", "")
     email = (data.get("email", "") or "").strip()
     phone = (data.get("phone", "") or "").strip()
+    source = data.get("source", "website")
 
     name = safe_name(raw_name)
     message = normalize_text(raw_message)
@@ -175,7 +182,7 @@ def analyze_lead(data):
 
     # Empty / missing message fast path
     if not message:
-        subject, body = build_email("low", name)
+        subject, body = build_email("low", name, source)
         return {
             "aiScore": 10,
             "aiPriority": "low",
@@ -228,11 +235,8 @@ def analyze_lead(data):
     if msg_len > 100:
         quality_boost += 5
         quality_notes.append("detailed message")
-    elif msg_len < 20:
+    elif msg_len < 40 and not high_hits: # Only penalize brevity if no high-intent hits found
         quality_penalty += 15
-        quality_notes.append("very short inquiry")
-    elif msg_len < 40:
-        quality_penalty += 5
         quality_notes.append("brief inquiry")
 
     if "?" in raw_message:
@@ -268,7 +272,7 @@ def analyze_lead(data):
 
     # Notes
     sentiment_str = "positive" if sentiment > 0.1 else "negative" if sentiment < -0.1 else "neutral"
-    note_parts = [f"[Resilience Mode] Scored by Arlo Local. Sentiment is {sentiment_str}."]
+    note_parts = [f"[Resilience Mode] Scored by NEXIO Local. Sentiment is {sentiment_str}."]
 
     if hard_neg_hits:
         note_parts.append("Strong spam/solicitation signals detected.")
@@ -303,7 +307,7 @@ def analyze_lead(data):
     notes = " ".join(note_parts)
 
     # Safe fallback draft
-    subject, body = build_email(priority, name)
+    subject, body = build_email(priority, name, source)
 
     return {
         "aiScore": final_score,

@@ -71,9 +71,9 @@ export const register = async (req, res) => {
         // System Email: Welcome (Exempt from limits)
         try {
             console.log("📧 Sending welcome email...");
-            const welcomeSubject = "Welcome to Arlo.ai! 🚀";
+            const welcomeSubject = "Welcome to NEXIO! 🚀";
             const welcomeBody = `
-                <h2>Welcome to Arlo.ai, ${name}!</h2>
+                <h2>Welcome to NEXIO, ${name}!</h2>
                 <p>We're thrilled to have you onboard.</p>
                 <p>Your AI Sales Assistant is ready to help you close more deals.</p>
                 <br/>
@@ -140,13 +140,16 @@ export const googleLogin = async (req, res) => {
             return res.status(400).json({ message: "No token provided" });
         }
 
+        const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim().replace(/^"|"$/g, '');
+        
         const ticket = await client.verifyIdToken({
             idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID,
+            audience: clientId,
         });
         const { name, email, picture, sub } = ticket.getPayload();
 
         let user = await User.findOne({ email });
+        let isNewUser = false;
 
         if (user) {
             if (!user.googleId) {
@@ -155,6 +158,7 @@ export const googleLogin = async (req, res) => {
                 await user.save();
             }
         } else {
+            isNewUser = true;
             // Create new user with a random password since it's required by schema fallback
             const randomPassword = crypto.randomBytes(16).toString("hex");
             const hashed = await bcrypt.hash(randomPassword, 10);
@@ -174,9 +178,9 @@ export const googleLogin = async (req, res) => {
 
             // Welcome Email
             try {
-                const welcomeSubject = "Welcome to Arlo.ai! 🚀";
+                const welcomeSubject = "Welcome to NEXIO! 🚀";
                 const welcomeBody = `
-                    <h2>Welcome to Arlo.ai, ${name}!</h2>
+                    <h2>Welcome to NEXIO, ${name}!</h2>
                     <p>You've successfully signed in with Google.</p>
                 `;
                 sendEmail(email, welcomeSubject, welcomeBody);
@@ -194,7 +198,7 @@ export const googleLogin = async (req, res) => {
 
         const business = await Business.findOne({ owner: user._id });
 
-        res.json({ token: jwtToken, user: safeUser, business });
+        res.json({ token: jwtToken, user: safeUser, business, isNewUser });
     } catch (error) {
         console.error("Google Login Error:", error);
         res.status(500).json({ error: "Google Login Failed: " + error.message });

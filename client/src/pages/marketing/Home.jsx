@@ -7,6 +7,8 @@ import Solutions from '../../components/marketing/Solutions';
 import AnalyticsPreview from '../../components/marketing/AnalyticsPreview';
 import Pricing from '../../components/marketing/Pricing';
 import IntroBranding from '../../components/marketing/IntroBranding';
+import ShowcaseSection from '../../components/marketing/ShowcaseSection';
+import SEO from '../../components/marketing/SEO';
 import Button from '../../components/ui/Button';
 
 const Home = () => {
@@ -20,7 +22,7 @@ const Home = () => {
     }, [isIntroActive]);
 
     return (
-        <div className="bg-background dark:bg-[#0a0a0a] overflow-hidden min-h-screen">
+        <div className="bg-background dark:bg-[#0a0a0a] min-h-screen">
             <AnimatePresence mode="wait">
                 {isIntroActive ? (
                     <motion.div key="intro-gate">
@@ -33,11 +35,18 @@ const Home = () => {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1 }}
                     >
+                        <SEO 
+                            title="NEXIO | The World's First Autonomous AI Sales Workforce"
+                            description="NEXIO transforms your sales funnel with autonomous AI agents that qualify, engage, and convert leads via WhatsApp 24/7."
+                        />
                         <Hero />
+                        <ShowcaseSection />
                         <div id="features">
                             <Features />
                         </div>
-                        <Solutions />
+                        <div id="solutions">
+                            <Solutions />
+                        </div>
                         <div id="demo">
                             <AnalyticsPreview />
                         </div>
@@ -61,11 +70,16 @@ const Home = () => {
                                             Start Free Trial
                                         </Button>
                                     </Link>
-                                    <Link to="/demo" className="w-full md:w-auto">
-                                        <Button variant="outline" className="btn-secondary btn-large w-full">
-                                            View Live Demo
-                                        </Button>
-                                    </Link>
+                                    <Button 
+                                        variant="outline" 
+                                        className="btn-secondary btn-large w-full"
+                                        onClick={() => {
+                                            const message = "Hi! I'm ready to architect my autonomous sales future with NEXIO. Can we talk?";
+                                            window.open(`https://wa.me/918848258969?text=${encodeURIComponent(message)}`, '_blank');
+                                        }}
+                                    >
+                                        Talk to Founder
+                                    </Button>
                                 </div>
                             </div>
                         </section>

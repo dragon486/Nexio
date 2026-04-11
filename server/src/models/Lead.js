@@ -42,8 +42,10 @@ const leadSchema = new mongoose.Schema(
         lastEmailReceivedAt: Date,
         meta: Object,
         aiResponse: {
-            whatsapp: String,
+            emailSubject: String,
+            emailBody: String,
             email: String,
+            whatsapp: String,
             salesFollowup: String,
             callScript: String,
 

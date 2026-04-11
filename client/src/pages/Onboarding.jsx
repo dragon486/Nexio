@@ -4,8 +4,16 @@ import { useNavigate } from 'react-router-dom';
 
 import Button from '../components/ui/Button';
 import api from '../services/api';
-import { Building2, MessageSquare, Zap, CheckCircle, ArrowRight, Copy, Check, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Building2, MessageSquare, Zap, CheckCircle, ArrowRight, Copy, Check, Eye, EyeOff, ShieldCheck, ChevronDown, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const targetAudienceSuggestions = [
+    "First-time home buyers and high-net-worth investors",
+    "Relocating families and corporate executives",
+    "Commercial property investors and retail developers",
+    "Young professionals seeking downtown condos",
+    "Retirees looking for vacation homes and downsizing"
+];
 
 const Onboarding = () => {
     const navigate = useNavigate();
@@ -14,10 +22,12 @@ const Onboarding = () => {
     const [businessId, setBusinessId] = useState(null);
     const [copied, setCopied] = useState({ key: false, snippet: false });
     const [showApiKey, setShowApiKey] = useState(false);
+    const [industryOpen, setIndustryOpen] = useState(false);
+    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
     const [formData, setFormData] = useState({
         // Step 1: Profile
-        industry: '',
+        industry: 'Real Estate',
         targetAudience: '',
         avgDealSize: '',
         website: '',
@@ -106,10 +116,10 @@ const Onboarding = () => {
                 <div className="text-center mb-10">
                     <h1 className="text-4xl font-black text-foreground italic tracking-tighter mb-3">
                         {step === 1 && "Business Profile"}
-                        {step === 2 && "Identity Settings"}
-                        {step === 3 && "Final Handshake"}
+                        {step === 2 && "AI Settings"}
+                        {step === 3 && "Connection"}
                     </h1>
-                    <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-[0.2em] max-w-md mx-auto leading-relaxed">
+                    <p className="text-[15px] text-muted-foreground/90 font-medium max-w-md mx-auto leading-relaxed">
                         {step === 1 && "Help NEXIO understand your target market and typical deal dynamics."}
                         {step === 2 && "Configure the psychological profile and tone of your AI representative."}
                         {step === 3 && "Deploy your capture snippet and bridge the gap to your dashboard."}
@@ -120,20 +130,46 @@ const Onboarding = () => {
                     {step === 1 && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center px-1">
-                                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Industry</label>
-                                        <button
-                                            onClick={() => setFormData({ ...formData, industry: 'SaaS & Enterprise Software' })}
-                                            className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] transition-colors flex items-center gap-1 font-black uppercase tracking-widest"
-                                        >
-                                            <Zap size={10} /> AI SUGGEST
-                                        </button>
+                                <div className="space-y-2 relative">
+                                    <div className="flex justify-between items-center px-1 mb-1">
+                                        <label className="text-sm font-semibold text-foreground/90">Industry</label>
                                     </div>
-                                    <input name="industry" value={formData.industry} onChange={handleChange} className="w-full bg-surface-soft/50 border border-surface-border rounded-xl p-3.5 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground/30" placeholder="e.g. Real Estate" />
+                                    <div onClick={() => setIndustryOpen(!industryOpen)} className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl p-4 flex justify-between items-center cursor-pointer hover:border-[#3b82f6]/50 transition-all text-[#0f172a] dark:text-[#f8fafc] font-bold shadow-inner group">
+                                        <span>{formData.industry || 'Real Estate'}</span>
+                                        <ChevronDown size={18} className="text-muted-foreground group-hover:text-amber-500 transition-colors" />
+                                    </div>
+                                    {industryOpen && (
+                                        <div className="absolute top-[86px] left-0 w-full bg-white dark:bg-[#1a1a1a] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl shadow-2xl overflow-hidden py-1 z-50">
+                                            <div onClick={() => { setFormData({...formData, industry: 'Real Estate'}); setIndustryOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#fafafa] dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-sm font-bold text-foreground transition-colors group">
+                                                <span>Real Estate <span className="text-[10px] text-emerald-500 uppercase tracking-widest ml-2 font-black bg-emerald-500/10 px-2 py-0.5 rounded">Active</span></span>
+                                                <Check size={16} className="text-emerald-500" />
+                                            </div>
+                                            <div className="w-full px-4 py-3 bg-[#f8fafc]/50 dark:bg-[#111111]/50 opacity-60 flex justify-between items-center cursor-not-allowed border-t border-[#e5e7eb] dark:border-[#2a2a2a] group" onClick={() => alert("SaaS support is coming soon! Stay tuned.")}>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors">SaaS & Software</span>
+                                                    <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest mt-0.5">Coming Soon</span>
+                                                </div>
+                                                <Lock size={14} className="text-muted-foreground group-hover:text-amber-500 transition-colors" />
+                                            </div>
+                                            <div className="w-full px-4 py-3 bg-[#f8fafc]/50 dark:bg-[#111111]/50 opacity-60 flex justify-between items-center cursor-not-allowed border-t border-[#e5e7eb] dark:border-[#2a2a2a] group" onClick={() => alert("E-commerce support is coming soon! Stay tuned.")}>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors">E-commerce</span>
+                                                    <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest mt-0.5">Coming Soon</span>
+                                                </div>
+                                                <Lock size={14} className="text-muted-foreground group-hover:text-amber-500 transition-colors" />
+                                            </div>
+                                            <div className="w-full px-4 py-3 bg-[#f8fafc]/50 dark:bg-[#111111]/50 opacity-60 flex justify-between items-center cursor-not-allowed border-t border-[#e5e7eb] dark:border-[#2a2a2a] group" onClick={() => alert("Healthcare support is coming soon! Stay tuned.")}>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-foreground group-hover:text-amber-500 transition-colors">Healthcare & MedSpas</span>
+                                                    <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest mt-0.5">Coming Soon</span>
+                                                </div>
+                                                <Lock size={14} className="text-muted-foreground group-hover:text-amber-500 transition-colors" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Avg Deal Size</label>
+                                    <label className="text-sm font-semibold text-foreground/90 block mb-1.5 px-1">Avg Deal Size</label>
                                     <div className="flex bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl focus-within:ring-4 focus-within:ring-[#3b82f6]/10 focus-within:border-[#3b82f6]/50 overflow-hidden transition-all shadow-inner">
                                         <select
                                             name="currency"
@@ -151,25 +187,29 @@ const Onboarding = () => {
                                             value={formData.avgDealSize}
                                             onChange={handleChange}
                                             className="flex-1 bg-transparent px-4 py-3.5 focus:outline-none text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30"
-                                            placeholder="5,000"
+                                            placeholder="500,000"
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-1">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Target Audience</label>
+                                    <label className="text-sm font-semibold text-foreground/90 mb-1">Target Audience</label>
                                     <button
-                                        onClick={() => setFormData({ ...formData, targetAudience: 'CTOs and IT Directors at mid-market firms' })}
-                                        className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] transition-colors flex items-center gap-1 font-black uppercase tracking-widest"
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData({ ...formData, targetAudience: targetAudienceSuggestions[suggestionIndex] });
+                                            setSuggestionIndex((prev) => (prev + 1) % targetAudienceSuggestions.length);
+                                        }}
+                                        className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] transition-colors flex items-center gap-1 font-black uppercase tracking-widest focus:outline-none"
                                     >
                                         <Zap size={10} /> AI SUGGEST
                                     </button>
                                 </div>
-                                <input name="targetAudience" value={formData.targetAudience} onChange={handleChange} className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl p-4 focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 outline-none transition-all text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30 shadow-inner" placeholder="e.g. Home buyers in Austin, TX" />
+                                <input name="targetAudience" value={formData.targetAudience} onChange={handleChange} className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl p-4 focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 outline-none transition-all text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30 shadow-inner" placeholder="e.g. Relocating families or property investors" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Website URL</label>
+                                <label className="text-sm font-semibold text-foreground/90 block mb-1.5 px-1">Website URL</label>
                                 <input name="website" value={formData.website} onChange={handleChange} className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl p-4 focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 outline-none transition-all text-[#0f172a] dark:text-[#f8fafc] font-black placeholder:text-[#94a3b8]/30 shadow-inner" placeholder="https://..." />
                             </div>
                         </motion.div>
@@ -178,7 +218,7 @@ const Onboarding = () => {
                     {step === 2 && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">AI Tone</label>
+                                <label className="text-sm font-semibold text-foreground/90 block mb-1.5 px-1">AI Tone</label>
                                 <div className="grid grid-cols-3 gap-4">
                                     {['friendly', 'professional', 'aggressive'].map(t => (
                                         <button
@@ -192,7 +232,7 @@ const Onboarding = () => {
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Follow-up Style</label>
+                                <label className="text-sm font-semibold text-foreground/90 block mb-1.5 px-1">Follow-up Style</label>
                                 <div className="grid grid-cols-3 gap-4">
                                     {['soft', 'direct', 'urgent'].map(s => (
                                         <button
@@ -212,7 +252,7 @@ const Onboarding = () => {
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                             <div className="bg-surface-soft/50 border border-surface-border rounded-2xl p-6">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Zap size={14} className="text-amber-500" /> Your NEXIO Key</h3>
+                                    <h3 className="text-sm font-bold text-foreground/90 flex items-center gap-2"><Zap size={14} className="text-amber-500" /> Your NEXIO Key</h3>
                                     <button 
                                         onClick={() => handleCopy(formData.apiKey, 'key')}
                                         className="text-[10px] font-bold text-amber-500 hover:text-amber-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter"
@@ -243,8 +283,8 @@ const Onboarding = () => {
                             <div className="bg-surface-soft/50 border border-surface-border rounded-2xl p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Building2 size={14} className="text-primary" /> Lead Capture Bridge</h3>
-                                        <p className="text-[10px] text-muted-foreground mt-1 font-medium">Embed this snippet into your HTML to bridge your site with NEXIO.</p>
+                                        <h3 className="text-sm font-bold text-foreground/90 flex items-center gap-2"><Building2 size={14} className="text-primary" /> Lead Capture</h3>
+                                        <p className="text-[10px] text-muted-foreground mt-1 font-medium">Embed this snippet into your HTML to start capturing leads with NEXIO.</p>
                                     </div>
                                     <button 
                                         onClick={() => handleCopy(`<form action="${window.location.origin}/api/leads/capture" method="POST">\n  <input type="hidden" name="apiKey" value="${formData.publicKey || 'YOUR_PUBLIC_KEY'}" />\n  <input type="email" name="email" placeholder="Email" required />\n  <button type="submit">Connect</button>\n</form>`, 'snippet')}
@@ -276,7 +316,7 @@ const Onboarding = () => {
 
                 <div className="flex justify-between mt-10 pt-6 border-t border-surface-border">
                     {step > 1 ? (
-                        <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground font-bold uppercase tracking-widest text-xs">
+                        <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground font-bold text-sm">
                             Previous Step
                         </Button>
                     ) : (
@@ -289,7 +329,7 @@ const Onboarding = () => {
                         </Button>
                     ) : (
                         <Button onClick={handleSubmit} disabled={loading} className="w-56 h-14 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none">
-                            {loading ? 'CALIBRATING...' : 'LAUNCH HUB'}
+                            {loading ? 'PREPARING...' : 'FINISH SETUP'}
                         </Button>
                     )}
                 </div>

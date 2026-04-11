@@ -33,7 +33,7 @@ export const verifyApiKey = async (req, res, next) => {
                 if (!isAllowed) {
                     console.warn(`[Blocked] Unauthorized origin attempt: ${origin} for business ${business.name}`);
                     return res.status(403).json({ 
-                        message: "Unauthorized Domain. Please authorized this domain in your Arlo dashboard settings (Integrations -> Security)." 
+                        message: "Unauthorized Domain. Please authorize this domain in your NEXIO dashboard settings (Integrations -> Security)." 
                     });
                 }
             }

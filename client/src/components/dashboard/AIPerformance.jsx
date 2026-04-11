@@ -7,9 +7,9 @@ const AIPerformance = ({ stats: data, isDemo }) => {
     // Expecting data: { avgScore, highPriority, midPriority, lowPriority, emailsSent, responseSpeed }
 
     const pieData = [
-        { name: 'Priority Alpha', value: data?.highPriority || 0, color: 'var(--color-primary)' },
-        { name: 'Strategic Mid', value: data?.midPriority || 0, color: '#3B82F6' },
-        { name: 'Operational Low', value: data?.lowPriority || 0, color: 'rgba(var(--muted-foreground-rgb), 0.3)' },
+        { name: 'High Priority', value: data?.highPriority || 0, color: 'var(--color-primary)' },
+        { name: 'Lead Nurture', value: data?.midPriority || 0, color: '#3B82F6' },
+        { name: 'General Info', value: data?.lowPriority || 0, color: 'rgba(var(--muted-foreground-rgb), 0.3)' },
     ];
 
     return (
@@ -70,13 +70,13 @@ const AIPerformance = ({ stats: data, isDemo }) => {
                         <div className="p-4 rounded-2xl bg-surface/40 border border-border/10 hover:border-primary/20 transition-all group overflow-hidden relative">
                             <div className="absolute -right-4 -top-4 w-12 h-12 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors" />
                             <Zap size={14} className="text-primary mb-3" />
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-60">Intelligence Volume</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-60">Lead Volume</div>
                             <div className="text-foreground font-black text-2xl tracking-tighter">{data?.emailsSent?.toLocaleString() || 0}</div>
                         </div>
                         <div className="p-4 rounded-2xl bg-surface/40 border border-border/10 hover:border-primary/20 transition-all group overflow-hidden relative">
                             <div className="absolute -right-4 -top-4 w-12 h-12 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-colors" />
                             <Clock size={14} className="text-emerald-500 mb-3" />
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-60">Response Physics</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-black mb-1 opacity-60">Response Velocity</div>
                             <div className="text-foreground font-black text-2xl tracking-tighter">{data?.responseSpeed || '0s'}</div>
                         </div>
                     </div>
@@ -87,7 +87,7 @@ const AIPerformance = ({ stats: data, isDemo }) => {
 
                         <div className="flex justify-between items-end mb-4 relative z-10">
                             <div>
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black mb-2 opacity-60">Strategic Win Engine</div>
+                                <div className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black mb-2 opacity-60">Conversion Engine</div>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-4xl font-black text-primary tracking-tighter">{data?.aiWinRate ?? 0}%</span>
                                     <span className="text-[10px] text-primary font-black uppercase tracking-widest">AI Domination</span>

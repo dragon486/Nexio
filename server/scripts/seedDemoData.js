@@ -97,10 +97,10 @@ const sampleLeads = [
         tags: ["finance", "closed"],
         conversationHistory: [
             { role: "user", content: "Need a secure way to automate our outbound follow-ups while staying compliant with finance regulations." },
-            { role: "model", content: JSON.stringify({ email: "Hi Michael, welcome to Arlo! We've just activated your SOC2-compliant outbound engine. Should we walk through the setup together tomorrow?", whatsapp: "Welcome aboard Michael! Your finance-safe outbound engine is ready for deployment." }) }
+            { role: "model", content: JSON.stringify({ email: "Hi Michael, welcome to NEXIO! We've just activated your SOC2-compliant outbound engine. Should we walk through the setup together tomorrow?", whatsapp: "Welcome aboard Michael! Your finance-safe outbound engine is ready for deployment." }) }
         ],
         aiResponse: {
-            email: "Hi Michael, welcome to Arlo! We've just activated your SOC2-compliant outbound engine. Should we walk through the setup together tomorrow?",
+            email: "Hi Michael, welcome to NEXIO! We've just activated your SOC2-compliant outbound engine. Should we walk through the setup together tomorrow?",
             whatsapp: "Welcome aboard Michael! Your finance-safe outbound engine is ready for deployment.",
             generatedAt: new Date(Date.now() - 259200000 + 1200000) // 3 days ago + 20 mins
         },
@@ -163,10 +163,10 @@ const seedDB = async () => {
 
         // Note: Using mongoose.connection.db to access collection directly to bypass model middleware if any, 
         // but here we just need a user ID.
-        let user = await mongoose.connection.collection('users').findOne({ email: 'test@arlo.ai' });
+        let user = await mongoose.connection.collection('users').findOne({ email: 'test@nexio.ai' });
 
         if (!user) {
-            console.log("User 'demo@arlo.ai' not found. Falling back to first available user.");
+            console.log("User 'demo@nexio.ai' not found. Falling back to first available user.");
             user = await mongoose.connection.collection('users').findOne({});
         }
 
@@ -217,23 +217,23 @@ const seedDB = async () => {
             // If lead doesn't have a specific createdAt, default to now
             if (!processedLead.createdAt) processedLead.createdAt = new Date();
 
-            // Replace 'Arlo' with actual business name in seeded responses
+            // Replace 'NEXIO' with actual business name in seeded responses
             const bName = business.name.replace("'s Business", "");
             if (processedLead.conversationHistory) {
                 processedLead.conversationHistory = processedLead.conversationHistory.map(h => {
                     if (h.role === 'model') {
                         let content = h.content;
-                        content = content.replace(/Arlo/g, bName);
+                        content = content.replace(/NEXIO/g, bName);
                         return { ...h, content };
                     }
                     return h;
                 });
             }
             if (processedLead.aiResponse && processedLead.aiResponse.email) {
-                processedLead.aiResponse.email = processedLead.aiResponse.email.replace(/Arlo/g, bName);
+                processedLead.aiResponse.email = processedLead.aiResponse.email.replace(/NEXIO/g, bName);
             }
             if (processedLead.aiResponse && processedLead.aiResponse.whatsapp) {
-                processedLead.aiResponse.whatsapp = processedLead.aiResponse.whatsapp.replace(/Arlo/g, bName);
+                processedLead.aiResponse.whatsapp = processedLead.aiResponse.whatsapp.replace(/NEXIO/g, bName);
             }
 
             return processedLead;

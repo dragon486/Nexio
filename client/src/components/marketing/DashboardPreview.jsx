@@ -38,7 +38,7 @@ const getConversion = (stage1, stage2) => {
 const PreviewLeadFeed = ({ leads }) => {
     return (
         <div className="space-y-4">
-            {leads.map((lead, index) => (
+            {leads.map((lead) => (
                 <div
                     key={lead._id}
                     className="flex items-center justify-between p-3 rounded-xl bg-muted border border-border"

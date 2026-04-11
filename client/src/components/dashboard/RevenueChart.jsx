@@ -1,34 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import { ArrowUpRight } from 'lucide-react';
 
-const RevenueChart = ({ data, isDemo, currency = 'USD', locale = 'en-US', title, subtitle }) => {
-    const [timeRange, setTimeRange] = useState('7d');
-
-    const formatValue = (value) => {
-        return new Intl.NumberFormat(locale, {
-            style: 'currency',
-            currency: currency,
-            maximumFractionDigits: 0
-        }).format(value);
-    };
-
-    const CustomTooltip = ({ active, payload, label }) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-surface border border-transparent p-4 rounded-xl shadow-2xl backdrop-blur-xl z-50">
-                    <p className="text-text-tertiary text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">{label}</p>
-                    <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-accent" />
-                        <p className="text-text-primary text-lg font-black tracking-tighter">
-                            {formatValue(payload[0].value * 100)}
-                        </p>
-                    </div>
-                </div>
-            );
-        }
+const RevenueTooltip = ({ active, payload, label, currency, locale }) => {
+    if (!active || !payload || payload.length === 0) {
         return null;
-    };
+    }
+
+    const formattedValue = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0
+    }).format(payload[0].value * 100);
+    return (
+        <div className="bg-surface border border-transparent p-4 rounded-xl shadow-2xl backdrop-blur-xl z-50">
+            <p className="text-text-tertiary text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">{label}</p>
+            <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-accent" />
+                <p className="text-text-primary text-lg font-black tracking-tighter">{formattedValue}</p>
+            </div>
+        </div>
+    );
+};
+
+const RevenueChart = ({ data, isDemo, currency = 'USD', locale = 'en-US', title, subtitle }) => {
 
     return (
         <div className="bg-surface border border-transparent rounded-2xl p-8 hover:shadow-xl hover:shadow-black/5 transition-all flex flex-col h-full relative group overflow-hidden">
@@ -63,7 +58,7 @@ const RevenueChart = ({ data, isDemo, currency = 'USD', locale = 'en-US', title,
                             tick={{ fill: 'var(--text-tertiary)', fontSize: 10, fontWeight: 700, opacity: 0.5 }}
                             tickFormatter={(value) => `$${value}k`}
                         />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} />
+                        <Tooltip content={<RevenueTooltip currency={currency} locale={locale} />} cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} />
                         <Bar 
                             dataKey="revenue" 
                             radius={[6, 6, 0, 0]}

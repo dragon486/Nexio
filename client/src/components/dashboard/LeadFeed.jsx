@@ -7,18 +7,14 @@ import { Link } from 'react-router-dom';
 import { subscribeToLeads, unsubscribeFromLeads } from '../../services/socketService';
 
 const LeadFeed = ({ leads: initialLeads, isDemo }) => {
-    const [leads, setLeads] = useState(initialLeads || []);
-
-    useEffect(() => {
-        setLeads(initialLeads || []);
-    }, [initialLeads]);
+    const [liveLeads, setLiveLeads] = useState([]);
 
     useEffect(() => {
         if (isDemo) return; // Don't subscribe to real leads in demo mode
 
         const handleNewLead = (newLead) => {
             console.log("⚡️ Real-time lead received:", newLead);
-            setLeads(prev => {
+            setLiveLeads(prev => {
                 // Prevent duplicates
                 if (prev.some(l => l._id === newLead._id)) return prev;
                 return [newLead, ...prev].slice(0, 10); // Keep top 10
@@ -28,6 +24,10 @@ const LeadFeed = ({ leads: initialLeads, isDemo }) => {
         subscribeToLeads(handleNewLead);
         return () => unsubscribeFromLeads(handleNewLead);
     }, [isDemo]);
+
+    const leads = isDemo
+        ? (initialLeads || [])
+        : [...liveLeads, ...(initialLeads || []).filter((lead) => !liveLeads.some((liveLead) => liveLead._id === lead._id))].slice(0, 10);
 
     return (
         <div className="bg-white dark:bg-[#1a1a1a] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-[12px] h-full flex flex-col p-0 relative shadow-sm transition-all duration-300 overflow-hidden">
@@ -58,7 +58,7 @@ const LeadFeed = ({ leads: initialLeads, isDemo }) => {
                 <AnimatePresence>
                     {leads && leads.map((lead, index) => (
                         <motion.div
-                            key={lead.id || index}
+                            key={lead._id || lead.id || index}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}

@@ -1,34 +1,42 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { 
+    MessageSquare, 
+    Zap, 
+    TrendingUp, 
+    ShieldCheck, 
+    Globe, 
+    Users 
+} from 'lucide-react';
 
 const features = [
     {
-        icon: "💬",
+        icon: MessageSquare,
         title: "AI Lead Qualification",
         description: "NEXIO engages leads instantly via WhatsApp & Email, asking the right questions to qualify them before you wake up."
     },
     {
-        icon: "⚡",
+        icon: Zap,
         title: "Instant Follow-ups",
         description: "Zero latency. While your competitors are sleeping, NEXIO is nurturing your leads and booking meetings."
     },
     {
-        icon: "📈",
+        icon: TrendingUp,
         title: "Revenue Intelligence",
         description: "Track pipeline value, conversion rates, and AI performance in real-time with our enterprise-grade dashboard."
     },
     {
-        icon: "🛡️",
+        icon: ShieldCheck,
         title: "Enterprise Security",
         description: "Bank-grade encryption and SOC2 compliant infrastructure ensures your customer data is always safe."
     },
     {
-        icon: "🌐",
+        icon: Globe,
         title: "Multi-Channel",
         description: "Seamlessly switch between WhatsApp, Email, and SMS based on where your leads are most active."
     },
     {
-        icon: "👥",
+        icon: Users,
         title: "Human Handoff",
         description: "NEXIO knows when to step back. High-value deals are instantly routed to your human sales team."
     }
@@ -48,10 +56,10 @@ const Features = () => {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className="text-center mb-24"
                 >
-                    <h2 className="text-[32px] md:text-[56px] font-black text-foreground mb-6 tracking-tighter">
-                        Everything you need to <span className="gradient-text italic">scale sales.</span>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-8">
+                        Everything you need to <span className="italic block md:inline">scale sales.</span>
                     </h2>
-                    <p className="text-[18px] md:text-[21px] text-muted-foreground max-w-2xl mx-auto font-medium">
+                    <p className="text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto tracking-normal">
                         Powerful features designed to automate the busywork and let you focus on closing.
                     </p>
                 </motion.div>
@@ -74,7 +82,9 @@ const Features = () => {
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                                 
                                 <div className="relative z-10">
-                                    <div className="feature-icon group-hover:bg-primary dark:group-hover:bg-white group-hover:text-background dark:group-hover:text-[#0a0a0a] group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/5" data-icon={feature.icon}></div>
+                                    <div className="feature-icon group-hover:bg-primary dark:group-hover:bg-white group-hover:text-background dark:group-hover:text-[#0a0a0a] group-hover:scale-110 transition-all duration-500 shadow-xl shadow-primary/5">
+                                        <feature.icon size={28} />
+                                    </div>
                                     <h3 className="group-hover:text-primary dark:group-hover:text-white transition-colors duration-300">{feature.title}</h3>
                                     <p className="font-medium opacity-80 group-hover:opacity-100 transition-opacity">{feature.description}</p>
                                     

@@ -4,7 +4,10 @@ import Notification from "../models/Notification.js";
 import { emitToBusiness } from "../utils/socket.js";
 import { processLead } from "../services/aiScoring.js";
 import { sendEmail } from "../services/emailService.js";
+import { sendWhatsAppMessage } from "../services/whatsappService.js";
 import { validateAiOutput, getFallbackEmail } from "../utils/safetyGuard.js";
+import { getEmailDraft, hasEmailDraft, normalizeAiResponse } from "../utils/aiResponse.js";
+import { runtimeConfig } from "../config/env.js";
 
 // Helper: Check & Increment Email Limit
 const checkAndIncrementEmailLimit = async (business) => {
@@ -48,7 +51,7 @@ const notifyAiLimit = async (businessId, aiNotes, leadName) => {
         const title = isDaily ? "Daily AI Quota Reached " : "AI Rate Limit Hit ⏳";
         const message = isDaily
             ? aiNotes
-            : `Arlo hit a rate limit while processing ${leadName}. ${aiNotes}`;
+            : `NEXIO hit a rate limit while processing ${leadName}. ${aiNotes}`;
 
         await Notification.create({
             business: businessId,
@@ -96,7 +99,7 @@ export const createLead = async (req, res) => {
 
         if (business && business.aiCredits > 0) {
             let aiResult = { aiScore: 0, aiResponse: {} };
-            const bName = (business.name || "Arlo").replace("'s Business", "");
+            const bName = (business.name || "NEXIO").replace("'s Business", "");
             let serviceFailed = false;
 
             try {
@@ -107,11 +110,11 @@ export const createLead = async (req, res) => {
                 }, [], "", bName, req.user?.name || "the Sales Team");
                 
                 aiResult = result;
-                if (!aiResult.aiResponse) aiResult.aiResponse = {};
+                aiResult.aiResponse = normalizeAiResponse(aiResult.aiResponse);
                 Object.assign(leadData, aiResult);
 
                 // 1. Safety Validation (Act Phase)
-                const emailContent = aiResult.aiResponse?.email;
+                const emailContent = getEmailDraft(aiResult.aiResponse);
                 const safetyResult = validateAiOutput(emailContent);
 
                 if (!safetyResult.safe) {
@@ -120,8 +123,11 @@ export const createLead = async (req, res) => {
                     leadData.aiNotes = (leadData.aiNotes || "") + `\n[Safety Block] AI-generated reply replaced with fallback: ${safetyResult.reason}`;
                     
                     // Trigger Fallback Email (Safe Mode)
-                    aiResult.aiResponse.email = getFallbackEmail(bName, leadData.name);
-                    aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
+                    aiResult.aiResponse = normalizeAiResponse({
+                        ...aiResult.aiResponse,
+                        emailSubject: `Re: Your Inquiry - ${bName}`,
+                        emailBody: getFallbackEmail(bName, leadData.name),
+                    });
                 }
             } catch (e) {
                 console.error("AI Service failure in createLead:", e.message);
@@ -130,23 +136,26 @@ export const createLead = async (req, res) => {
                 leadData.aiNotes = (leadData.aiNotes || "") + `\n[System Fallback] AI service unavailable, fallback email sent.`;
                 
                 // Trigger Rescue Fallback
-                aiResult.aiResponse.email = getFallbackEmail(bName, leadData.name);
-                aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
+                aiResult.aiResponse = normalizeAiResponse({
+                    emailSubject: `Re: Your Inquiry - ${bName}`,
+                    emailBody: getFallbackEmail(bName, leadData.name),
+                });
             }
 
             // 2. Auto-Send Email (Unified Logic)
             const minScore = business.settings.minScoreToAutoReply || 50;
             const shouldSend = (aiResult.aiScore >= minScore) || serviceFailed;
 
-            if (business.settings.autoReply && aiResult.aiResponse?.email && shouldSend) {
+            if (business.settings.autoReply && hasEmailDraft(aiResult.aiResponse) && shouldSend) {
                 const inHours = isWithinWorkingHours(business);
                 const canSend = inHours && (await checkAndIncrementEmailLimit(business));
 
                 if (canSend) {
                     const subject = aiResult.aiResponse.emailSubject || "Re: Your Inquiry - " + business.name;
-                    await sendEmail(leadData.email, subject, aiResult.aiResponse.email, business.owner);
+                    await sendEmail(leadData.email, subject, getEmailDraft(aiResult.aiResponse), business.owner);
                     leadData.status = "contacted";
                     leadData.isAutoPilotContacted = true;
+                    leadData.contactedAt = leadData.contactedAt || new Date();
                     aiResult.aiResponse.autoSent = true; 
                 } else if (!inHours) {
                     console.log(`[Auto-Pilot] Outside working hours for ${business.name}. Skipping auto-send.`);
@@ -156,6 +165,8 @@ export const createLead = async (req, res) => {
                     leadData.aiNotes = (leadData.aiNotes || "") + "\n[System] Auto-reply skipped: Daily email limit reached.";
                 }
             }
+
+            leadData.aiResponse = aiResult.aiResponse;
 
             // 3. Save to History
             const newHistory = [];
@@ -209,7 +220,7 @@ export const captureLead = async (req, res) => {
 
         if (business && business.aiCredits > 0) {
             let aiResult = { aiScore: 0, aiResponse: {} };
-            const bName = (business.name || "Arlo").replace("'s Business", "");
+            const bName = (business.name || "NEXIO").replace("'s Business", "");
             let serviceFailed = false;
 
             try {
@@ -220,7 +231,7 @@ export const captureLead = async (req, res) => {
                 }, [], "", bName, business.owner?.name || "the Sales Team");
 
                 aiResult = result;
-                if (!aiResult.aiResponse) aiResult.aiResponse = {};
+                aiResult.aiResponse = normalizeAiResponse(aiResult.aiResponse);
 
                 // Atomic credit deduction - ONLY on success
                 business.aiCredits -= 1;
@@ -232,9 +243,10 @@ export const captureLead = async (req, res) => {
                     leadData.aiPriority = aiResult.aiPriority || "low";
                 }
                 if (aiResult.aiNotes !== undefined) leadData.aiNotes = aiResult.aiNotes;
+                leadData.aiResponse = aiResult.aiResponse;
 
                 // 1. Safety Validation (Act Phase)
-                const emailContent = aiResult.aiResponse?.email;
+                const emailContent = getEmailDraft(aiResult.aiResponse);
                 const safetyResult = validateAiOutput(emailContent);
 
                 if (!safetyResult.safe) {
@@ -243,8 +255,11 @@ export const captureLead = async (req, res) => {
                     leadData.aiNotes = (leadData.aiNotes || "") + `\n[Safety Block] AI-generated reply replaced with fallback: ${safetyResult.reason}`;
                     
                     // Trigger Fallback Email (Safe Mode)
-                    aiResult.aiResponse.email = getFallbackEmail(bName, name);
-                    aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
+                    aiResult.aiResponse = normalizeAiResponse({
+                        ...aiResult.aiResponse,
+                        emailSubject: `Re: Your Inquiry - ${bName}`,
+                        emailBody: getFallbackEmail(bName, name),
+                    });
                 }
             } catch (e) {
                 console.error("AI Service failure in captureLead:", e.message);
@@ -253,24 +268,27 @@ export const captureLead = async (req, res) => {
                 leadData.aiNotes = (leadData.aiNotes || "") + `\n[System Fallback] AI service unavailable, fallback email sent.`;
                 
                 // Trigger Rescue Fallback
-                aiResult.aiResponse.email = getFallbackEmail(bName, name);
-                aiResult.aiResponse.emailSubject = `Re: Your Inquiry - ${bName}`;
+                aiResult.aiResponse = normalizeAiResponse({
+                    emailSubject: `Re: Your Inquiry - ${bName}`,
+                    emailBody: getFallbackEmail(bName, name),
+                });
             }
 
             // 2. Auto-Send Email (Unified Logic)
             const minScore = business.settings.minScoreToAutoReply || 50;
             const shouldSend = (aiResult.aiScore >= minScore) || serviceFailed;
 
-            if (business.settings.autoReply && aiResult.aiResponse?.email && shouldSend) {
+            if (business.settings.autoReply && hasEmailDraft(aiResult.aiResponse) && shouldSend) {
                 const inHours = isWithinWorkingHours(business);
                 const canSend = inHours && (await checkAndIncrementEmailLimit(business));
 
                 if (canSend) {
                     try {
                         const subject = aiResult.aiResponse.emailSubject || "Re: Your Inquiry - " + business.name;
-                        const emailResult = await sendEmail(email, subject, aiResult.aiResponse.email, business.owner._id);
+                        const emailResult = await sendEmail(email, subject, getEmailDraft(aiResult.aiResponse), business.owner._id);
                         leadData.status = "contacted";
                         leadData.isAutoPilotContacted = true;
+                        leadData.contactedAt = leadData.contactedAt || new Date();
                         aiResult.aiResponse.autoSent = true; 
 
                         if (emailResult && emailResult.threadId) {
@@ -282,6 +300,8 @@ export const captureLead = async (req, res) => {
                     }
                 }
             }
+
+            leadData.aiResponse = aiResult.aiResponse;
 
             // 3. Save to History
             const newHistory = [];
@@ -314,7 +334,7 @@ export const captureLead = async (req, res) => {
 
                 const adminBody = `
                     <h3>${isHot ? '🔥 High Priority Lead Detected!' : 'New Lead Captured'}</h3>
-                    <p><strong>Arlo Analysis:</strong> ${leadData.aiNotes || 'Pending...'}</p>
+                    <p><strong>NEXIO Analysis:</strong> ${leadData.aiNotes || 'Pending...'}</p>
                     <hr/>
                     <ul>
                         <li><strong>Name:</strong> ${name}</li>
@@ -324,7 +344,7 @@ export const captureLead = async (req, res) => {
                     </ul>
                     <p><em>"${message}"</em></p>
                     <br/>
-                    <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard/lead/${lead._id}" style="background:${isHot ? '#EF4444' : '#8B5CF6'}; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">
+                    <a href="${runtimeConfig.clientUrl}/dashboard/leads/${lead._id}" style="background:${isHot ? '#EF4444' : '#8B5CF6'}; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">
                         ${isHot ? 'Take Action Now' : 'View in Dashboard'}
                     </a>
                 `;
@@ -353,7 +373,13 @@ export const captureLead = async (req, res) => {
 export const getLeads = async (req, res) => {
     try {
         const leads = await Lead.find({
-            business: req.user.businessId
+            business: req.user.businessId,
+            $or: [
+                { name: { $ne: 'Anonymous Visitor' } },
+                { aiScore: { $gte: 50 } },
+                { email: { $exists: true, $ne: "" } },
+                { phone: { $exists: true, $ne: "" } }
+            ]
         }).sort({ createdAt: -1 });
 
         res.json(leads);
@@ -363,12 +389,17 @@ export const getLeads = async (req, res) => {
 };
 
 export const getLead = async (req, res) => {
+    console.log(`[API] Fetching lead ID: ${req.params.id} for business: ${req.user.businessId}`);
     try {
         const lead = await Lead.findOne({
             _id: req.params.id,
             business: req.user.businessId
         });
-        if (!lead) return res.status(404).json({ message: "Lead not found" });
+        if (!lead) {
+            console.log(`[API] Lead ${req.params.id} not found`);
+            return res.status(404).json({ message: "Lead not found" });
+        }
+        console.log(`[API] Lead ${req.params.id} found, sending response`);
         res.json(lead);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -385,11 +416,12 @@ export const generateFollowup = async (req, res) => {
 
         // Trigger AI Logic (Re-using processLead or similar)
         const business = await Business.findById(req.user.businessId);
-        const bName = business?.name?.replace("'s Business", "") || "Arlo.ai";
+        const bName = business?.name?.replace("'s Business", "") || "NEXIO";
         const aiResult = await processLead({
             ...lead.toObject(),
             business: business
         }, lead.conversationHistory || [], lead.memorySummary || "", bName, req.user?.name || business?.owner?.name || "the Sales Team");
+        aiResult.aiResponse = normalizeAiResponse(aiResult.aiResponse);
 
         // Update Lead with new insights (Ensure atomic update to avoid mismatches)
         if (aiResult.aiScore !== undefined && aiResult.aiScore !== null) {
@@ -397,19 +429,15 @@ export const generateFollowup = async (req, res) => {
             lead.aiPriority = aiResult.aiPriority || "low";
         }
         if (aiResult.aiNotes !== undefined) lead.aiNotes = aiResult.aiNotes;
+        lead.aiResponse = aiResult.aiResponse;
 
-        // Add to history ONLY if content exists
-        if (aiResult.aiScore > 0 || (aiResult.aiResponse && Object.keys(aiResult.aiResponse).length > 0)) {
+        // Add to history ONLY if content exists or it's a quota hit warning
+        if (aiResult.aiScore > 0 || aiResult.aiNotes === "LIMIT_REACHED" || (aiResult.aiResponse && Object.keys(aiResult.aiResponse).length > 0)) {
             lead.conversationHistory.push({
                 role: "model",
-                content: JSON.stringify(aiResult.aiResponse),
+                content: JSON.stringify({ ...aiResult.aiResponse, autoSent: false }),
                 timestamp: new Date()
             });
-        } else {
-            // Notify if limit hit during manual regeneration
-            if (aiResult.aiScore === 0) {
-                await notifyAiLimit(business._id, aiResult.aiNotes, lead.name || "the lead");
-            }
         }
 
         await lead.save();
@@ -455,6 +483,23 @@ export const sendMessage = async (req, res) => {
                 console.error("Manual email failed:", emailError);
                 // Ideally we should rollback the increment here, but for now it's fine.
             }
+        } else if (type === "whatsapp") {
+            if (!business.whatsappConfig?.isActive || !business.whatsappConfig?.accessToken) {
+                return res.status(400).json({ message: "WhatsApp integration is not active for this account." });
+            }
+            if (!lead.phone) {
+                return res.status(400).json({ message: "This lead does not possess a documented phone number." });
+            }
+            try {
+                await sendWhatsAppMessage(
+                    lead.phone,
+                    content,
+                    business.whatsappConfig
+                );
+            } catch (whatsappError) {
+                console.error("Manual WhatsApp dispatch failed:", whatsappError);
+                return res.status(500).json({ message: "WhatsApp API rejected the message. Verify your Meta credentials." });
+            }
         }
 
         // 2. Update History
@@ -466,6 +511,7 @@ export const sendMessage = async (req, res) => {
 
         // 3. Update Status
         lead.status = "contacted";
+        lead.contactedAt = lead.contactedAt || new Date();
 
         await lead.save();
         res.json(lead);

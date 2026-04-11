@@ -5,8 +5,11 @@ import { motion } from 'framer-motion';
 
 const Footer = () => {
     return (
-        <footer className="border-t border-border/10 dark:border-white/10 bg-background dark:bg-[#0a0a0a] pt-20 pb-10">
-            <div className="max-w-7xl mx-auto px-6">
+        <footer className="relative border-t border-glass-border bg-bg-primary pt-32 pb-16 overflow-hidden">
+            {/* Dark mode depth enhancement */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[400px] bg-gradient-to-t from-primary/5 to-transparent blur-[120px] pointer-events-none" />
+            
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-10 mb-20">
                     <div className="col-span-2 lg:col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-6 group">
@@ -77,50 +80,56 @@ const Footer = () => {
                             The autonomous AI sales workforce that works 24/7.
                             Qualify leads, book meetings, and close deals without lifting a finger.
                         </p>
-                        <div className="flex gap-3">
-                            {[Twitter, Linkedin, Github].map((Icon, i) => (
-                                <a key={i} href="#" className="w-10 h-10 rounded-full bg-foreground/5 border border-foreground/5 flex items-center justify-center text-foreground hover:text-primary dark:hover:text-white hover:border-primary/50 dark:hover:border-white/50 transition-all shadow-sm">
-                                    <Icon size={18} />
+                        <div className="flex gap-4">
+                            {[
+                                { Icon: Linkedin, href: "https://www.linkedin.com/in/adel-muhammed-49136a282/" },
+                                { Icon: Github, href: "https://github.com/dragon486" }
+                            ].map((item, i) => (
+                                <a 
+                                    key={i} 
+                                    href={item.href} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="w-10 h-10 rounded-full bg-secondary-bg border border-glass-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-text-primary transition-all duration-500 shadow-sm group"
+                                >
+                                    <item.Icon size={18} className="group-hover:scale-110 transition-transform" />
                                 </a>
                             ))}
                         </div>
                     </div>
 
                     <div>
-                        <h4 className="font-bold text-foreground mb-6">Product</h4>
-                        <ul className="space-y-4 text-sm text-muted-foreground">
-                            <li><Link to="/features" className="hover:text-primary dark:hover:text-white transition-colors">Features</Link></li>
-                            <li><Link to="/pricing" className="hover:text-primary dark:hover:text-white transition-colors">Pricing</Link></li>
-                            <li><Link to="/demo" className="hover:text-primary dark:hover:text-white transition-colors">Interactive Demo</Link></li>
-                            <li><Link to="/changelog" className="hover:text-primary dark:hover:text-white transition-colors">Changelog</Link></li>
+                        <h4 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.2em] opacity-40 mb-8">Product</h4>
+                        <ul className="space-y-4 text-[14px]">
+                            <li><Link to="/features" className="text-text-secondary hover:text-text-primary transition-all duration-300">Features</Link></li>
+                            <li><Link to="/pricing" className="text-text-secondary hover:text-text-primary transition-all duration-300">Pricing</Link></li>
+                            <li><Link to="/demo" className="text-text-secondary hover:text-text-primary transition-all duration-300">Interactive Demo</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="font-bold text-foreground mb-6">Company</h4>
-                        <ul className="space-y-4 text-sm text-muted-foreground">
-                            <li><Link to="/about" className="hover:text-primary dark:hover:text-white transition-colors">About</Link></li>
-                            <li><Link to="/blog" className="hover:text-primary dark:hover:text-white transition-colors">Blog</Link></li>
-                            <li><Link to="/careers" className="hover:text-primary dark:hover:text-white transition-colors">Careers</Link></li>
-                            <li><Link to="/contact" className="hover:text-primary dark:hover:text-white transition-colors">Contact</Link></li>
+                        <h4 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.2em] opacity-40 mb-8">Company</h4>
+                        <ul className="space-y-4 text-[14px]">
+                            <li><Link to="/about" className="text-text-secondary hover:text-text-primary transition-all duration-300">About</Link></li>
+                            <li><Link to="/blog" className="text-text-secondary hover:text-text-primary transition-all duration-300">Blog</Link></li>
+                            <li><Link to="/contact" className="text-text-secondary hover:text-text-primary transition-all duration-300">Contact</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="font-bold text-foreground mb-6">Legal</h4>
-                        <ul className="space-y-4 text-sm text-muted-foreground">
-                            <li><Link to="/privacy" className="hover:text-primary dark:hover:text-white transition-colors">Privacy</Link></li>
-                            <li><Link to="/terms" className="hover:text-primary dark:hover:text-white transition-colors">Terms</Link></li>
-                            <li><Link to="/security" className="hover:text-primary dark:hover:text-white transition-colors">Security</Link></li>
+                        <h4 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.2em] opacity-40 mb-8">Legal</h4>
+                        <ul className="space-y-4 text-[14px]">
+                            <li><Link to="/privacy" className="text-text-secondary hover:text-text-primary transition-all duration-300">Privacy</Link></li>
+                            <li><Link to="/terms" className="text-text-secondary hover:text-text-primary transition-all duration-300">Terms</Link></li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="pt-8 border-t border-border/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-                    <p>© 2026 NEXIO Inc. All rights reserved.</p>
-                    <div className="flex items-center gap-2 font-medium">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-glow shadow-emerald-500/50"></span>
-                        All Systems Operational
+                <div className="pt-10 border-t border-glass-border flex flex-col md:flex-row justify-between items-center gap-6 text-[12px] text-text-secondary font-medium">
+                    <p>© 2026 NEXIO Inc. Built for the high-end sales workforce.</p>
+                    <div className="flex items-center gap-3 py-1.5 px-4 bg-secondary-bg border border-glass-border rounded-full backdrop-blur-3xl shadow-sm">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.6)]"></span>
+                        <span className="tracking-tight opacity-90 font-semibold text-text-primary">All Systems Operational</span>
                     </div>
                 </div>
             </div>

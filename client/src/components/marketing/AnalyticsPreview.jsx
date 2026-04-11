@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import GlassCard from '../ui/GlassCard';

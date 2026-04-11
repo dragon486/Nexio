@@ -6,14 +6,33 @@ import Business from "../models/Business.js";
 export const getLeadAnalytics = async (req, res) => {
     try {
         const businessId = new mongoose.Types.ObjectId(req.user.businessId);
+        const { startDate, endDate, timeRange } = req.query;
 
-        // 1. Detection: Check if any REAL leads exist for this business
+        // 1. Date Range Handling
+        let end = endDate ? new Date(endDate) : new Date();
+        let start;
+
+        if (startDate) {
+            start = new Date(startDate);
+        } else if (timeRange === '7D') {
+            start = new Date(new Date().setDate(end.getDate() - 7));
+        } else if (timeRange === '30D') {
+            start = new Date(new Date().setDate(end.getDate() - 30));
+        } else if (timeRange === '90D') {
+            start = new Date(new Date().setDate(end.getDate() - 90));
+        } else if (timeRange === 'ALL') {
+            start = new Date(0); // Beginning of time
+        } else {
+            start = new Date(new Date().setDate(end.getDate() - 30)); // Default 30D
+        }
+
+        // 2. Detection: Check if any REAL leads exist for this business
         const realLeadCount = await Lead.countDocuments({ business: businessId, isSample: false });
         const isDemo = realLeadCount === 0;
 
-        // 2. Fetch Business for Deal Size
+        // 3. Fetch Business for Deal Size
         const business = await Business.findById(req.user.businessId);
-        let dealSize = 0; // Strict fallback: no fabricated revenue
+        let dealSize = 0; 
 
         if (business) {
             const dealSizeParser = parseInt(business.avgDealSize?.replace(/[^0-9]/g, '') || 0);
@@ -21,25 +40,34 @@ export const getLeadAnalytics = async (req, res) => {
         }
 
         // Fetch Recent Leads (Filtered by Demo/Live mode)
-        const recentLeads = await Lead.find({ business: businessId, isSample: isDemo })
+        const recentLeads = await Lead.find({ 
+            business: businessId, 
+            isSample: isDemo,
+            createdAt: { $gte: start, $lte: end }
+        })
             .sort({ createdAt: -1 })
             .limit(10)
             .select("name status aiScore aiPriority isAutoPilotContacted dealSize createdAt");
 
-        // In local development, ignore response loops > 1 hr to prevent developer test data from skewing metrics.
-        // In production, we allow up to 7 days to account for real-world queue backlogs or API outages.
-        const MAX_LATENCY = process.env.NODE_ENV === 'production' ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60;
+        const MAX_LATENCY = process.env.NODE_ENV === 'production' ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24;
 
         const pipeline = [
-            { $match: { business: businessId, isSample: isDemo } },
+            { 
+                $match: { 
+                    business: businessId, 
+                    isSample: isDemo
+                } 
+            },
             {
                 $facet: {
-                    // 1. Funnel Breakdown
+                    // 1. Funnel Breakdown (Date Filtered)
                     funnel: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         { $group: { _id: "$status", count: { $sum: 1 } } }
                     ],
-                    // 2. AI Performance
+                    // 2. AI Performance (Date Filtered)
                     aiPerformance: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         {
                             $group: {
                                 _id: null,
@@ -57,8 +85,9 @@ export const getLeadAnalytics = async (req, res) => {
                             }
                         }
                     ],
-                    // 3. Conversion Rate
+                    // 3. Conversion Rate (Date Filtered)
                     conversion: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         {
                             $group: {
                                 _id: null,
@@ -82,13 +111,14 @@ export const getLeadAnalytics = async (req, res) => {
                             }
                         }
                     ],
-                    // 4. Source Breakdown
+                    // 4. Source Breakdown (Date Filtered)
                     sources: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         { $group: { _id: "$source", count: { $sum: 1 } } }
                     ],
-                    // 5. Revenue History (Last 7 days) - Bucket by convertedAt (Phase 3)
+                    // 5. Revenue History (Date Filtered)
                     revenueHistory: [
-                        { $match: { convertedAt: { $ne: null } } },
+                        { $match: { convertedAt: { $ne: null }, createdAt: { $gte: start, $lte: end } } },
                         {
                             $group: {
                                 _id: { $dateToString: { format: "%Y-%m-%d", date: "$convertedAt" } },
@@ -99,9 +129,9 @@ export const getLeadAnalytics = async (req, res) => {
                         { $sort: { "_id": 1 } },
                         { $project: { date: "$_id", revenue: 1, leads: 1, _id: 0 } }
                     ],
-                    // 6. Lead Velocity
+                    // 6. Lead Velocity (Date Filtered)
                     velocity: [
-                        { $match: { convertedAt: { $ne: null } } },
+                        { $match: { convertedAt: { $ne: null }, createdAt: { $gte: start, $lte: end } } },
                         {
                             $project: {
                                 days: {
@@ -114,8 +144,9 @@ export const getLeadAnalytics = async (req, res) => {
                         },
                         { $group: { _id: null, avgDays: { $avg: "$days" } } }
                     ],
-                    // 7. Efficiency
+                    // 7. Efficiency (Date Filtered)
                     efficiency: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         {
                             $group: {
                                 _id: null,
@@ -128,8 +159,9 @@ export const getLeadAnalytics = async (req, res) => {
                             }
                         }
                     ],
-                    // 8. Resilience Stats
+                    // 8. Resilience Stats (Date Filtered)
                     resilience: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         {
                             $group: {
                                 _id: null,
@@ -139,8 +171,9 @@ export const getLeadAnalytics = async (req, res) => {
                             }
                         }
                     ],
-                    // 9. ROI & Performance (Phase 3 Refinement)
+                    // 9. ROI & Performance (Date Filtered)
                     roi: [
+                        { $match: { createdAt: { $gte: start, $lte: end } } },
                         {
                             $group: {
                                 _id: null,
@@ -179,7 +212,7 @@ export const getLeadAnalytics = async (req, res) => {
                                 leadsQualified: {
                                     $sum: { $cond: [{ $or: [{ $eq: ["$status", "qualified"] }, { $ne: ["$qualifiedAt", null] }] }, 1, 0] }
                                 },
-                                 totalResponseTime: {
+                                totalResponseTime: {
                                     $sum: {
                                         $let: {
                                             vars: {
@@ -265,10 +298,10 @@ export const getLeadAnalytics = async (req, res) => {
                                 }
                             }
                         }
-                    ], // Added missing closing bracket and comma
-                    // 10. Potential Revenue Pipeline
+                    ], 
+                    // 10. Entire Pipeline Potential (No Date Filter)
                     potential: [
-                        { $match: { status: { $in: ["new", "contacted", "qualified"] }, isSample: isDemo } },
+                        { $match: { status: { $in: ["new", "contacted", "qualified"] } } },
                         { $group: { _id: null, total: { $sum: { $ifNull: ["$dealSize", dealSize] } } } }
                     ]
                 }
@@ -301,8 +334,7 @@ export const getLeadAnalytics = async (req, res) => {
 
         // Revenue History padding
         const paddedRevenue = [];
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+        const daysToPadd = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         
         const historyMap = {};
         if (data.revenueHistory) {
@@ -311,8 +343,8 @@ export const getLeadAnalytics = async (req, res) => {
             });
         }
 
-        for (let i = 0; i < 30; i++) {
-            const d = new Date(thirtyDaysAgo);
+        for (let i = 0; i <= daysToPadd; i++) {
+            const d = new Date(start);
             d.setDate(d.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
             paddedRevenue.push(historyMap[dateStr] || { date: dateStr, revenue: 0, leads: 0 });
@@ -323,6 +355,7 @@ export const getLeadAnalytics = async (req, res) => {
 
         const responseData = {
             isDemo,
+            dateRange: { start, end },
             roi: {
                 aiGeneratedRevenue: roiData.aiRevenue || 0,
                 manualRevenue: roiData.manualRevenue || 0,

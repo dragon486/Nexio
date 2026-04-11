@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Menu, X, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../../lib/ThemeContext';
+import { useTheme } from '../../lib/theme-context';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
 import { isAuthenticated } from '../../services/authService';
@@ -11,7 +11,6 @@ const Navbar = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isRotating, setIsRotating] = useState(false);
     const { theme, toggleTheme } = useTheme();
-    const location = useLocation();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -28,26 +27,10 @@ const Navbar = () => {
     };
 
     const navLinks = [
-        { name: 'Features', path: '#features' },
-        { name: 'Solutions', path: '#solutions' },
-        { name: 'Pricing', path: '#pricing' },
+        { name: 'Features', path: '/features' },
+        { name: 'Solutions', path: '/solutions' },
+        { name: 'Pricing', path: '/pricing' },
     ];
-
-    const scrollToSection = (e, id) => {
-        e.preventDefault();
-        const element = document.getElementById(id.replace('#', ''));
-        if (element) {
-            const offset = 80;
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - offset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-            setMobileMenuOpen(false);
-        }
-    };
 
     return (
         <nav className={`marketing-navbar ${scrolled ? 'scrolled' : ''}`}>
@@ -117,38 +100,46 @@ const Navbar = () => {
                 </Link>
 
                 {/* Desktop Nav Links */}
-                <ul className="nav-links hidden md:flex">
+                <ul className="nav-links hidden md:flex items-center gap-10">
                     {navLinks.map((link) => (
                         <li key={link.name}>
-                            <a href={link.path} onClick={(e) => scrollToSection(e, link.path)}>
+                            <Link 
+                                to={link.path} 
+                                className="text-[14px] font-[600] text-text-secondary hover:text-text-primary transition-colors"
+                            >
                                 {link.name}
-                            </a>
+                            </Link>
                         </li>
                     ))}
                     <li>
-                        <a href="#demo" onClick={(e) => scrollToSection(e, '#demo')}>
-                            Demo
-                        </a>
+                        <Link 
+                            to="/demo" 
+                            className="text-[14px] font-[600] text-text-secondary hover:text-text-primary transition-colors border-l border-border pl-10 ml-0"
+                        >
+                            Explore Demo
+                        </Link>
                     </li>
                 </ul>
 
                 {/* Actions */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
                     <button
                         onClick={handleThemeToggle}
-                        className={`theme-toggle ${isRotating ? 'rotating' : ''}`}
+                        className={`theme-toggle ${isRotating ? 'rotating' : ''} flex items-center justify-center w-10 h-10 rounded-full transition-all hover:bg-bg-secondary`}
                         aria-label="Toggle theme"
                     >
-                        {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
+                        {theme === 'light' ? <Moon size={20} strokeWidth={2.5} /> : <Sun size={20} strokeWidth={2.5} />}
                     </button>
                     
                     {isAuthenticated() ? (
-                        <Link to="/dashboard" className="btn-primary">
-                            Dashboard
-                        </Link>
+                        <div className="hidden sm:block">
+                            <Link to="/dashboard" className="btn-primary">
+                                Dashboard
+                            </Link>
+                        </div>
                     ) : (
-                        <>
-                            <Link to="/login" className="hidden md:block text-sm font-medium hover:text-primary dark:hover:text-white transition-colors">
+                        <div className="hidden sm:flex items-center gap-6">
+                            <Link to="/login" className="text-sm font-medium hover:text-primary dark:hover:text-white transition-colors">
                                 Sign In
                             </Link>
                             <Link 
@@ -157,12 +148,12 @@ const Navbar = () => {
                             >
                                 Get Started
                             </Link>
-                        </>
+                        </div>
                     )}
 
                     {/* Mobile Menu Toggle */}
                     <button
-                        className="md:hidden text-foreground ml-2"
+                        className="md:hidden text-foreground ml-1"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
                         {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -181,15 +172,22 @@ const Navbar = () => {
                     >
                         <div className="px-6 py-8 space-y-4 flex flex-col">
                             {navLinks.map((link) => (
-                                <a 
+                                <Link 
                                     key={link.name} 
-                                    href={link.path} 
-                                    onClick={(e) => scrollToSection(e, link.path)}
+                                    to={link.path} 
+                                    onClick={() => setMobileMenuOpen(false)}
                                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-all py-2"
                                 >
                                     {link.name}
-                                </a>
+                                </Link>
                             ))}
+                            <Link 
+                                to="/demo" 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-all py-2 border-t border-border/10 pt-4"
+                            >
+                                Explore Demo
+                            </Link>
                             <div className="pt-4 border-t border-border/10 flex flex-col gap-4">
                                 <Link to="/login" className="block text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>
                                     Sign In

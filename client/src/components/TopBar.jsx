@@ -1,62 +1,134 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Moon, Sun } from 'lucide-react';
-import { logout } from '../services/authService';
-import { useTheme } from '../lib/ThemeContext';
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { Bell, Users, Moon, Sun, Settings, Layout } from 'lucide-react';
+import api from '../services/api';
+import { getSocket } from '../services/socketService';
+import { useTheme } from '../lib/theme-context';
+import { getUser } from '../services/authService';
+import { cn } from '../lib/utils';
 
-const TopBar = ({ user }) => {
-    const navigate = useNavigate();
+/* Map pathname → readable page title */
+const PAGE_TITLES = {
+    '/dashboard':                  'Dashboard',
+    '/dashboard/leads':            'Leads',
+    '/dashboard/pipeline':         'Pipeline',
+    '/dashboard/analytics':        'Analytics',
+    '/dashboard/settings':         'Settings',
+    '/dashboard/settings/automations': 'Automations',
+    '/dashboard/settings/integrations': 'Integrations',
+    '/dashboard/settings/team': 'Team Management',
+    '/dashboard/admin':            'Admin Panel',
+};
+
+const TopBar = ({ user: propUser }) => {
     const { theme, toggleTheme } = useTheme();
+    const location = useLocation();
+    const authUser = getUser();
+    const user = propUser || authUser;
+    const [unreadCount, setUnreadCount] = useState(0);
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    const isDashboard = location.pathname === '/dashboard';
+    const title = PAGE_TITLES[location.pathname] || 'Dashboard';
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                const { data } = await api.get('/notifications');
+                const count = (data || []).filter(n => !n.read).length;
+                setUnreadCount(count);
+            } catch (err) {
+                setUnreadCount(0);
+                console.error('Failed to fetch unread notifications', err);
+            }
+        };
+        fetchUnread();
+        
+        // Listen for mark-read events if any
+        window.addEventListener('notifications-updated', fetchUnread);
+
+        // REAL-TIME SOCKET LISTENER
+        const socket = getSocket();
+        if (socket) {
+            socket.on('new_notification', fetchUnread);
+        }
+
+        return () => {
+            window.removeEventListener('notifications-updated', fetchUnread);
+            if (socket) {
+                socket.off('new_notification', fetchUnread);
+            }
+        };
+    }, []);
+
+    const avatarColors = ['bg-violet-500', 'bg-rose-500', 'bg-amber-500'];
+    const teamAvatars = ['J', 'I', '+3'];
 
     return (
-        <header className="top-header bg-[var(--bg-secondary)] border-b border-[var(--border)] px-10 py-5 flex justify-between items-center sticky top-0 z-[100] will-change-transform">
-            {/* Left: Page Label */}
-            <div className="page-label text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">
-                INTELLIGENCE DASHBOARD
-            </div>
+        <header className="sticky top-0 z-[100] h-[56px] bg-[var(--bg-secondary)] border-b border-[var(--border)] flex items-center justify-between px-5 md:px-8 shrink-0">
+            {/* Left — Page title */}
+            <h1 className="text-lg font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>
+                {title}
+            </h1>
 
-            {/* Right: Actions */}
-            <div className="header-actions flex items-center gap-4">
-                {/* Search Bar */}
-                <div className="relative group">
-                    <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                    <input 
-                        type="text" 
-                        className="search-bar w-80 pl-11 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-[var(--text-tertiary)]/50"
-                        placeholder="Search metrics, customers, analytics..."
-                    />
+            {/* Right — Actions */}
+            <div className="flex items-center gap-2">
+
+                <div className="hidden sm:flex items-center -space-x-2 mr-1">
+                    <div className="w-7 h-7 rounded-full border-2 border-white dark:border-[var(--bg-primary)] bg-blue-500 flex items-center justify-center text-white text-[9px] font-bold shadow-sm">
+                        {user?.name?.charAt(0) || 'U'}
+                    </div>
                 </div>
 
-                {/* Theme Toggle */}
-                <button 
+                <Link to="/dashboard/settings/team" className="hidden sm:flex w-7 h-7 rounded-full border border-dashed border-gray-300 dark:border-gray-600 items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-all mr-1" title="Add Team Member">
+                    <Users size={12} />
+                </Link>
+
+                {/* Theme toggle */}
+                <button
                     onClick={toggleTheme}
-                    className="icon-btn w-10 h-10 border border-[var(--border)] bg-[var(--bg-secondary)] rounded-xl flex items-center justify-center cursor-pointer hover:bg-[var(--bg-primary)] transition-all"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all"
+                    aria-label="Toggle theme"
                 >
-                    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                    {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
                 </button>
 
-                {/* User Profile */}
-                <div className="user-profile flex items-center gap-3 pl-1.5 pr-4 py-1.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl">
-                    <div className="user-avatar w-9 h-9 rounded-lg bg-black flex items-center justify-center text-white font-bold text-sm">
-                        {user?.name?.charAt(0) || 'A'}
+                {/* Notification bell */}
+                <Link 
+                    to="/dashboard/notifications"
+                    className="relative w-8 h-8 flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                >
+                    <Bell size={15} />
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#0066ff] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 border-2 border-white dark:border-[var(--bg-primary)] scale-in animate-in slide-in-from-bottom-1 duration-300">
+                            {unreadCount}
+                        </span>
+                    )}
+                </Link>
+
+                {/* Customize Widget button */}
+                {isDashboard && (
+                    <button 
+                        onClick={() => window.dispatchEvent(new CustomEvent('open-widget-manager'))}
+                        className="hidden md:flex items-center gap-2 px-3 py-1.5 border border-[var(--border)] rounded-lg text-[12px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+                        <Layout size={13} />
+                        Customize Widget
+                    </button>
+                )}
+
+                {/* User avatar */}
+                <div className="flex items-center gap-2 pl-2 border-l border-[var(--border)] ml-1">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0066ff] to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                        {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                     </div>
-                    <div className="user-info text-left">
-                        <div className="user-name text-[13px] font-semibold leading-tight">
-                            {user?.name || 'Admin User'}
-                        </div>
-                        <div className="user-tier text-[10px] text-[var(--success-green)] font-bold flex items-center gap-1.5 uppercase tracking-wide">
-                            <span className="tier-dot w-1 h-1 bg-[var(--success-green)] rounded-full" />
-                            EXECUTIVE
-                        </div>
+                    <div className="hidden lg:block text-left">
+                        <p className="text-[12px] font-black leading-tight truncate max-w-[120px]" style={{ color: 'var(--text-primary)' }}>
+                            {user?.name || 'User'}
+                        </p>
+                        <p className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5" style={{ color: 'var(--success-green)' }}>
+                           ● {user?.plan || 'Free Plan'}
+                        </p>
                     </div>
                 </div>
-
-                {/* Optional: Logout if needed, or keep it in Sidebar */}
             </div>
         </header>
     );

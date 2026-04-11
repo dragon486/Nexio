@@ -1,8 +1,11 @@
 import 'dotenv/config';
-import app from './src/app.js';
 import { createServer } from "http";
+import mongoose from "mongoose";
+import app from './src/app.js';
+import connectDB, { disconnectDB } from "./src/config/db.js";
+import { runtimeConfig, validateRuntimeConfig, getRuntimeWarnings } from "./src/config/env.js";
 import { initSocket } from "./src/utils/socket.js";
-import { initEmailSyncService } from "./src/services/emailSyncService.js";
+import { initEmailSyncService, stopEmailSyncService } from "./src/services/emailSyncService.js";
 import fs from 'fs';
 import path from 'path';
 
@@ -19,13 +22,67 @@ console.error = (...args) => {
     logStdout.write(args.join(' ') + '\n');
 };
 
-const PORT = process.env.PORT || 8000;
+validateRuntimeConfig();
+getRuntimeWarnings().forEach((warning) => {
+    console.warn(`[Startup Warning] ${warning}`);
+});
+
+const PORT = runtimeConfig.port;
 const server = createServer(app);
 
-// Initialize Socket.io and Background Services
-initSocket(server);
-initEmailSyncService();
+const startServer = async () => {
+    await connectDB();
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    initSocket(server);
+    initEmailSyncService();
+
+    await new Promise((resolve) => {
+        server.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+            resolve();
+        });
+    });
+};
+
+let shuttingDown = false;
+
+const shutdown = async (signal) => {
+    if (shuttingDown) {
+        return;
+    }
+
+    shuttingDown = true;
+    console.log(`[Shutdown] Received ${signal}. Draining services...`);
+
+    stopEmailSyncService();
+
+    await new Promise((resolve) => {
+        server.close(() => resolve());
+    });
+
+    if (mongoose.connection.readyState !== 0) {
+        await disconnectDB();
+    }
+
+    console.log("[Shutdown] Complete.");
+    process.exit(0);
+};
+
+process.on("SIGINT", () => {
+    shutdown("SIGINT").catch((error) => {
+        console.error("[Shutdown] Failed:", error);
+        process.exit(1);
+    });
+});
+
+process.on("SIGTERM", () => {
+    shutdown("SIGTERM").catch((error) => {
+        console.error("[Shutdown] Failed:", error);
+        process.exit(1);
+    });
+});
+
+startServer().catch((error) => {
+    console.error("[Startup] Failed to boot server:", error);
+    process.exit(1);
 });

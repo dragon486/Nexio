@@ -53,13 +53,39 @@ const businessSchema = new mongoose.Schema(
         },
         plan: {
             type: String,
-            enum: ["free", "starter", "pro", "enterprise"],
-            default: "free",
+            enum: ["free", "founder_starter", "growth", "enterprise"],
+            default: "free"
+        },
+        subscriptionExpiresAt: {
+            type: Date
+        },
+        trialExpiresAt: {
+            type: Date,
+            default: () => new Date(+new Date() + 7*24*60*60*1000) // 7 days from now
+        },
+        conversationsUsed: {
+            type: Number,
+            default: 0
+        },
+        maxConversations: {
+            type: Number,
+            default: 50 // Default for free trial
+        },
+        maxBots: {
+            type: Number,
+            default: 1 // Default for free trial
         },
         targetAudience: String,
         avgDealSize: String,
         onboardingCompleted: { type: Boolean, default: false },
+        whatsappConfig: {
+            phoneNumberId: { type: String, default: "" },   // Meta Phone Number ID
+            verifyToken: { type: String, default: "" },     // Used for webhook validation
+            accessToken: { type: String, default: "" },     // Permanent System User Token
+            isActive: { type: Boolean, default: false }     // Toggle bot on/off
+        },
         settings: {
+            knowledgeBase: { type: String, default: "" },   // Global AI Company Brain
             autoReply: { type: Boolean, default: true },
             aiFollowup: { type: Boolean, default: true },
             leadScoring: { type: Boolean, default: true },
@@ -86,6 +112,7 @@ const businessSchema = new mongoose.Schema(
             schedulingLink: { type: String, default: "" },
             businessPhone: { type: String, default: "" },
             availabilityInstructions: { type: String, default: "" },
+            isWidgetActive: { type: Boolean, default: false },
         },
     },
     { timestamps: true }

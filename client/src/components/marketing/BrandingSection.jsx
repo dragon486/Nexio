@@ -69,7 +69,7 @@ const BrandingSection = () => {
                         whileInView={{ y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="text-[100px] md:text-[220px] font-black tracking-tighter text-foreground leading-[0.8] mb-0 select-none"
+                        className="text-[70px] sm:text-[100px] md:text-[220px] font-black tracking-tighter text-foreground leading-[0.8] mb-0 select-none"
                         style={{ 
                             fontFamily: "'Work Sans', sans-serif",
                             letterSpacing: "-0.06em"

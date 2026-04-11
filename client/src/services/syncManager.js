@@ -81,7 +81,7 @@ class SyncManager {
             console.log(`[Sync] Successfully synced ${currentItem.type}.`);
             this.queue.shift();
             this.saveQueue();
-        } catch (error) {
+        } catch {
             currentItem.attempts++;
             
             if (currentItem.attempts >= MAX_ATTEMPTS) {

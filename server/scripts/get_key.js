@@ -10,7 +10,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const getKey = async () => {
     await mongoose.connect(process.env.MONGO_URI);
-    const user = await mongoose.connection.collection('users').findOne({ email: 'test@arlo.ai' });
+    const user = await mongoose.connection.collection('users').findOne({ email: 'test@nexio.ai' });
     const business = await mongoose.connection.collection('businesses').findOne({ owner: user._id });
     console.log(business.publicKey);
     process.exit(0);
