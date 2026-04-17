@@ -1,0 +1,90 @@
+name: Deploy Arlo.ai Production
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build from the server context
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest server/
+          
+          # Dual Tagging Strategy (LOCKED BY CTO)
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Update ECS API Service
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE_API }} \
+            --force-new-deployment
+
+      - name: Update ECS Worker Service
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE_WORKER }} \
+            --force-new-deployment
+
+      - name: Wait for Deployment Stability
+        run: |
+          echo "⏳ Waiting for API and Worker services to reach stable state..."
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --services ${{ secrets.ECS_SERVICE_API }} ${{ secrets.ECS_SERVICE_WORKER }}
+          echo "✅ Services are stable and healthy."
+
+      - name: Discord Notification (Success)
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{
+            "embeds": [{
+              "title": "🚀 Arlo.ai Deploy SUCCESS",
+              "description": "Production environment updated and verified.",
+              "color": 3066993,
+              "fields": [
+                { "name": "Commit SHA", "value": "`${{ github.sha }}`", "inline": true },
+                { "name": "Status", "value": "Stable & Rolling", "inline": true }
+              ]
+            }]
+          }' ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Discord Notification (Failure)
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{
+            "embeds": [{
+              "title": "🔴 Arlo.ai Deploy FAILED",
+              "description": "The deployment pipeline encountered an error during build or verification.",
+              "color": 15158332,
+              "fields": [
+                { "name": "Commit SHA", "value": "`${{ github.sha }}`", "inline": true },
+                { "name": "Action Required", "value": "Check GitHub Action logs immediately.", "inline": false }
+              ]
+            }]
+          }' ${{ secrets.DISCORD_WEBHOOK }}

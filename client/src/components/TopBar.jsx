@@ -5,7 +5,6 @@ import api from '../services/api';
 import { getSocket } from '../services/socketService';
 import { useTheme } from '../lib/theme-context';
 import { getUser } from '../services/authService';
-import { cn } from '../lib/utils';
 
 /* Map pathname → readable page title */
 const PAGE_TITLES = {
@@ -59,9 +58,6 @@ const TopBar = ({ user: propUser }) => {
             }
         };
     }, []);
-
-    const avatarColors = ['bg-violet-500', 'bg-rose-500', 'bg-amber-500'];
-    const teamAvatars = ['J', 'I', '+3'];
 
     return (
         <header className="sticky top-0 z-[100] h-[56px] bg-[var(--bg-secondary)] border-b border-[var(--border)] flex items-center justify-between px-5 md:px-8 shrink-0">

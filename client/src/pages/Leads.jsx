@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getLeads } from '../services/leadService';
 import { Search, Filter, MoreHorizontal, User, Mail, DollarSign, Activity, Zap, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -9,9 +9,8 @@ const Leads = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [priorityFilter, setPriorityFilter] = useState('all');
+    const [priorityFilter] = useState('all');
     const navigate = useNavigate();
-    const location = useLocation();
 
     useEffect(() => {
         const loadLeads = async () => {

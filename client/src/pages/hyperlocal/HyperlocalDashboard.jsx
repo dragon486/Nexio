@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import {
     MessageSquare, Users, Bot, Zap, Send, CheckCircle2,
@@ -20,7 +20,7 @@ export default function NexioLocalDashboard() {
     const [refreshing, setRefreshing] = useState(false);
     const [broadcast, setBroadcast] = useState({ message: '', target: 'all', sending: false, sent: false, error: '' });
 
-    const fetchData = async (showRefresh = false) => {
+    const fetchData = useCallback(async (showRefresh = false) => {
         if (!business?._id) return;
         if (showRefresh) setRefreshing(true);
         try {
@@ -36,9 +36,9 @@ export default function NexioLocalDashboard() {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [business?._id]);
 
-    useEffect(() => { fetchData(); }, [business]);
+    useEffect(() => { fetchData(); }, [fetchData]);
 
     const handleBroadcast = async () => {
         if (!broadcast.message.trim()) return;

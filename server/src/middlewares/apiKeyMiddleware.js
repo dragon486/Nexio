@@ -7,6 +7,16 @@ export const verifyApiKey = async (req, res, next) => {
                        req.headers["x-public-key"] || 
                        req.body.apiKey;
 
+        // [SIMULATION BYPASS] allow fixed test key only in mock mode
+        if (process.env.MOCK_SERVICES === "true" && apiKey === "admin_load_test_key") {
+            const mockBusiness = await Business.findOne(); // Grab first business for context
+            if (mockBusiness) {
+                req.business = mockBusiness;
+                console.log(`[Auth] 🧪 Simulation bypass active for key: ${apiKey}`);
+                return next();
+            }
+        }
+
         if (!apiKey) {
             return res.status(401).json({ message: "API key missing" });
         }
@@ -18,6 +28,10 @@ export const verifyApiKey = async (req, res, next) => {
         if (apiKey.startsWith('pk_live_')) {
             business = await Business.findOne({ publicKey: apiKey });
             console.log(`[Auth] Public Key Lookup: ${business ? 'Found' : 'NOT FOUND'}`);
+
+            if (!business) {
+                return res.status(401).json({ message: "Invalid Public Key" });
+            }
 
             // --- DOMAIN WHITELISTING (CORS CHECK) ---
             const origin = req.headers.origin || req.headers.referer;

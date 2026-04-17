@@ -13,7 +13,7 @@ import { getMyBusiness } from '../../services/businessService';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Integrations = () => {
+    const Integrations = () => {
     const [business, setBusiness] = useState({});
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -128,8 +128,11 @@ const Integrations = () => {
         }
     };
 
+    const apiBase = (import.meta.env.VITE_API_URL || window.location.origin).replace(/\/+$/, '');
+    const widgetBase = (import.meta.env.VITE_WIDGET_URL || window.location.origin).replace(/\/+$/, '');
+
     const displaySnippet = `<!-- NEXIO Alpha Snippet: Secure Capture -->
-<form action="http://localhost:8000/api/leads/capture" method="POST">
+<form action="${apiBase}/api/leads/capture" method="POST">
   <input type="hidden" name="apiKey" value="${business.publicKey || 'YOUR_PUBLIC_KEY'}" />
   <div class="field">
     <label>Name</label>
@@ -143,14 +146,14 @@ const Integrations = () => {
 </form>`;
 
     const widgetSnippet = `<!-- NEXIO AI Chat Widget -->
-<script src="http://localhost:5173/embed.js?key=${business.publicKey || 'YOUR_PUBLIC_KEY'}" async></script>`;
+<script src="${widgetBase}/embed.js?key=${business.publicKey || 'YOUR_PUBLIC_KEY'}" async></script>`;
 
     const proCode = `// 1. Add to .env file
 NEXIO_API_KEY=${business.apiKey || 'YOUR_API_KEY'}
 
 // 2. Server-side Capture (Node.js)
 async function captureLead(leadData) {
-  const response = await fetch('https://nexio-ai-api.com/api/leads/capture', {
+  const response = await fetch('${apiBase}/api/leads/capture', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -338,7 +338,7 @@ export default function NexioLocalBotConfig() {
                         <div className="mt-5 p-4 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--bg-primary)' }}>
                             <div className="text-xs font-semibold mb-1.5" style={{ color: 'var(--text-tertiary)' }}>WhatsApp Webhook URL (Paste in Meta Dashboard)</div>
                             <code className="text-xs text-emerald-500 font-mono break-all">
-                                {window.location.origin.replace(':5173', ':8000')}/webhooks/hyperlocal/{business?._id}
+                                {window.location.origin.replace(':5173', ':8080')}/webhooks/hyperlocal/{business?._id}
                             </code>
                         </div>
 

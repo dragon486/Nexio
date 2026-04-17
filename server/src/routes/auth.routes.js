@@ -4,11 +4,13 @@ import {
     initiateGmailConnect, handleGmailCallback, disconnectGmail
 } from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/authMiddleware.js";
+import { validate } from "../middlewares/validate.js";
+import { loginSchema, registerSchema } from "../validators/auth.validator.js";
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
+router.post("/register", validate(registerSchema), register);
+router.post("/login", validate(loginSchema), login);
 router.post("/google", googleLogin);
 router.get("/me", protect, getMe);
 router.post("/forgot-password", forgotPassword);

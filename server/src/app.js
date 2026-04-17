@@ -1,6 +1,9 @@
 import fs from "fs";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import { standardLimiter } from "./middlewares/rateLimiter.js";
+import { globalErrorHandler } from "./middlewares/errorMiddleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import { protect } from "./middlewares/authMiddleware.js";
 import businessRoutes from "./routes/business.routes.js";
@@ -17,14 +20,21 @@ import { runtimeConfig } from "./config/env.js";
 
 const app = express();
 
-// Middleware
+// Security & Diagnostics Middleware
+app.use(helmet());
+app.use(standardLimiter);
+
 app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
         const duration = Date.now() - start;
         const msg = `[${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)\n`;
-        console.log(msg);
+        // Explicitly log 4xx errors to console for deep debugging
+        if (res.statusCode >= 400 && res.statusCode < 500) {
+            console.error(`🚨 [Backend Error Triggered] ${req.method} ${req.originalUrl || req.url} returned ${res.statusCode}. Check auth headers/CORS/proxy map.`);
+        }
         try {
+
             fs.appendFileSync('/tmp/webhook-log.txt', msg);
         } catch (e) {}
     });
@@ -73,4 +83,8 @@ app.get("/api/private", protect, (req, res) => {
     });
 });
 
+// Final Error Handling Middleware
+app.use(globalErrorHandler);
+
 export default app;
+

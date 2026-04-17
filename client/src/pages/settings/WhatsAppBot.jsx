@@ -59,7 +59,13 @@ const WhatsAppBot = () => {
         </div>
     );
 
-    const isPro = plan === 'pro' || plan === 'enterprise' || plan === 'starter';
+    const normalizedPlan = plan === 'starter'
+        ? 'founder_starter'
+        : plan === 'pro'
+            ? 'growth'
+            : plan;
+
+    const isPro = normalizedPlan === 'growth' || normalizedPlan === 'pro_intelligence' || normalizedPlan === 'enterprise';
 
     return (
         <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">

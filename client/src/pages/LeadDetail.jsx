@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { getSocket } from '../services/socketService';
@@ -45,7 +45,7 @@ const LeadDetail = () => {
         scrollToBottom();
     }, [lead?.conversationHistory]);
 
-    const fetchLead = async (isMounted = true) => {
+    const fetchLead = useCallback(async (isMounted = true) => {
         try {
             const res = await api.get(`/leads/${id}`);
             if (isMounted) {
@@ -58,13 +58,13 @@ const LeadDetail = () => {
                 setLoading(false);
             }
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         let isMounted = true;
         fetchLead(isMounted);
         return () => { isMounted = false; };
-    }, [id]);
+    }, [fetchLead]);
 
     useEffect(() => {
         const socket = getSocket();
@@ -112,6 +112,19 @@ const LeadDetail = () => {
         }
     };
 
+    const handleUpdateStatus = async (status) => {
+        try {
+            const updatedLead = await updateLead(id, { status });
+            setLead(updatedLead);
+        } catch (error) {
+            console.error("Failed to update lead status", error);
+            setAlert({
+                title: "Status Update Failed",
+                message: error.response?.data?.message || "Could not update the lead status right now."
+            });
+        }
+    };
+
     const handleSendMessage = async (content, type = 'whatsapp', subject = '') => {
         if (!content) return;
         setSending(true);
@@ -132,14 +145,6 @@ const LeadDetail = () => {
         } finally {
             setSending(false);
         }
-    };
-
-    const formatCurrency = (val) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(val || 0);
     };
 
     if (loading) return (

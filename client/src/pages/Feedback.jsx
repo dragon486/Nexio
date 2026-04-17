@@ -24,9 +24,10 @@ const Feedback = () => {
         if (!message.trim()) return;
         setSubmitting(true);
         try {
-            // Try to send via API; graceful fallback
-            await api.post('/feedback', { type, rating, message, user: user?.name }).catch(() => {});
-        } catch {}
+            await api.post('/feedback', { type, rating, message, user: user?.name });
+        } catch (error) {
+            console.warn("Feedback endpoint unavailable, keeping local success flow.", error);
+        }
         setTimeout(() => {
             setSubmitting(false);
             setSubmitted(true);

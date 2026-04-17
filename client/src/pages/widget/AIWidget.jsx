@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Send, X, MessageSquare, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 
 const AIWidget = () => {
     const { key } = useParams();
-    const [searchParams] = useSearchParams();
-    const origin = searchParams.get('origin');
     
     const [expanded, setExpanded] = useState(false);
     const [config, setConfig] = useState(null);
@@ -70,7 +68,7 @@ const AIWidget = () => {
             if (res.data.leadId) setLeadId(res.data.leadId);
             setChatHistory(prev => [...prev, { role: 'model', content: res.data.reply }]);
             
-        } catch (error) {
+        } catch {
             setChatHistory(prev => [...prev, { 
                 role: 'model', 
                 content: "I'm having a little trouble connecting. Please try again later." 

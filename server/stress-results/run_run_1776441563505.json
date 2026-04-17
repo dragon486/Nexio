@@ -1,0 +1,92 @@
+{
+  "runId": "run_1776441563505",
+  "config": {
+    "rps": 20,
+    "maxJobs": 300,
+    "maxDurationMs": 600000,
+    "apiKey": "admin_load_test_key",
+    "apiEndpoint": "http://localhost:8080/api/leads/capture"
+  },
+  "startTime": "2026-04-17T15:59:26.304Z",
+  "endTime": "2026-04-17T15:59:47.377Z",
+  "durationMs": 21073,
+  "delta": {
+    "leadsCreated": 0,
+    "jobsCompleted": 151,
+    "jobsFailed": 0
+  },
+  "snapshots": {
+    "start": {
+      "runId": "run_1776441563505",
+      "phase": "initial",
+      "timestamp": "2026-04-17T15:59:26.304Z",
+      "metrics": {
+        "queues": {
+          "lead-processing": {
+            "waiting": 0,
+            "active": 5,
+            "completed": 240,
+            "failed": 0,
+            "delayed": 0
+          },
+          "email-send": {
+            "waiting": 0,
+            "active": 0,
+            "completed": 223,
+            "failed": 0,
+            "delayed": 0
+          },
+          "whatsapp-send": {
+            "waiting": 0,
+            "active": 0,
+            "completed": 0,
+            "failed": 0,
+            "delayed": 0
+          }
+        },
+        "redis": {
+          "usedMemory": "2.97M"
+        },
+        "db": {
+          "testLeads": 0
+        }
+      }
+    },
+    "end": {
+      "runId": "run_1776441563505",
+      "phase": "final",
+      "timestamp": "2026-04-17T15:59:47.377Z",
+      "metrics": {
+        "queues": {
+          "lead-processing": {
+            "waiting": 0,
+            "active": 5,
+            "completed": 391,
+            "failed": 0,
+            "delayed": 0
+          },
+          "email-send": {
+            "waiting": 0,
+            "active": 0,
+            "completed": 223,
+            "failed": 0,
+            "delayed": 0
+          },
+          "whatsapp-send": {
+            "waiting": 0,
+            "active": 0,
+            "completed": 0,
+            "failed": 0,
+            "delayed": 0
+          }
+        },
+        "redis": {
+          "usedMemory": "3.43M"
+        },
+        "db": {
+          "testLeads": 0
+        }
+      }
+    }
+  }
+}

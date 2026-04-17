@@ -1,9 +1,8 @@
-import User from "../models/User.js";
-
 // Master Superadmin Email List
-const SUPERADMIN_EMAILS = [
-    'adelmuhammed786@gmail.com'
-];
+const SUPERADMIN_EMAILS = (process.env.SUPERADMIN_EMAILS || 'adelmuhammed786@gmail.com')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
 
 export const isAdmin = async (req, res, next) => {
     try {
@@ -12,7 +11,7 @@ export const isAdmin = async (req, res, next) => {
             return res.status(401).json({ message: "Not authorized. Missing credentials." });
         }
 
-        if (SUPERADMIN_EMAILS.includes(req.user.email)) {
+        if (SUPERADMIN_EMAILS.includes(req.user.email.toLowerCase())) {
             next();
         } else {
             return res.status(403).json({ message: "Security Violation: Access denied. This incident will be logged." });

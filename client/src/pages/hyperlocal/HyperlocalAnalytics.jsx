@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { BarChart3, MessageSquare, Users, Bot, TrendingUp, Activity, RefreshCw } from 'lucide-react';
 import {
@@ -26,7 +26,7 @@ export default function NexioLocalAnalytics() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const load = async (showRefresh = false) => {
+    const load = useCallback(async (showRefresh = false) => {
         if (!business?._id) return;
         if (showRefresh) setRefreshing(true);
         try {
@@ -34,9 +34,9 @@ export default function NexioLocalAnalytics() {
             setData(result);
         } catch (err) { console.error(err); }
         finally { setLoading(false); setRefreshing(false); }
-    };
+    }, [business?._id]);
 
-    useEffect(() => { load(); }, [business]);
+    useEffect(() => { load(); }, [load]);
 
     if (loading) return (
         <div className="flex items-center justify-center h-64">

@@ -7,7 +7,7 @@ const simulateWebhook = async () => {
     try {
         console.log("🚀 Incoming transmission... Simulating Meta WhatsApp Webhook...\n");
 
-        const targetUrl = "http://localhost:8000/api/webhooks/whatsapp";
+        const targetUrl = "http://localhost:8080/api/webhooks/whatsapp";
         
         // Construct the exact identical JSON structural payload that Meta Graph sends for text messages
         const payload = {

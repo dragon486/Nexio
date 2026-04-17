@@ -12,9 +12,9 @@ const normalizeUrl = (value, fallback) => {
 
 export const runtimeConfig = Object.freeze({
     nodeEnv: trim(process.env.NODE_ENV) || "development",
-    port: toInt(process.env.PORT, 8000),
+    port: toInt(process.env.PORT, 8080),
     clientUrl: normalizeUrl(process.env.CLIENT_URL, "http://localhost:5173"),
-    apiUrl: normalizeUrl(process.env.API_URL, "http://localhost:8000"),
+    apiUrl: normalizeUrl(process.env.API_URL, "http://localhost:8080"),
     mongoUri: trim(process.env.MONGO_URI),
     jwtSecret: trim(process.env.JWT_SECRET),
     geminiApiKey: trim(process.env.GEMINI_API_KEY),
@@ -65,6 +65,11 @@ export const validateRuntimeConfig = () => {
 
     if (!runtimeConfig.jwtSecret) {
         errors.push("JWT_SECRET is required.");
+    }
+
+    // PRODUCTION STRICTURE: Redis is mandatory for BullMQ & Socket sync
+    if (runtimeConfig.nodeEnv === "production" && !process.env.REDIS_URL && !process.env.UPSTASH_REDIS_URL) {
+        errors.push("REDIS_URL or UPSTASH_REDIS_URL is mandatory in production for distributed sync.");
     }
 
     if (errors.length > 0) {

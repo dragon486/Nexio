@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { cn } from '../../lib/utils';
 
 /* ─────────────────────────────────────────────
@@ -134,7 +134,7 @@ export const MonthlyBarChart = ({ data = [], currentMonth = new Date().getMonth(
 /* ─────────────────────────────────────────────
    Sparkline  — Tiny inline trend line
 ───────────────────────────────────────────── */
-export const Sparkline = ({ data = [], width = 80, height = 36, color = '#0066ff', positive = true }) => {
+export const Sparkline = ({ data = [], width = 80, height = 36, color = '#0066ff' }) => {
     if (data.length < 2) return null;
     const max = Math.max(...data);
     const min = Math.min(...data);
@@ -209,36 +209,39 @@ export const Heatmap = ({ data }) => {
 ───────────────────────────────────────────── */
 export const DonutChart = ({ size = 140, segments = [], label = '' }) => {
     const total = segments.reduce((a, b) => a + (b.value || 0), 0) || 1;
-    let offset = 0;
     const r = 16;
     const circ = 2 * Math.PI * r;
+    const segmentGeometry = segments.map((seg, index) => {
+        const pct = (seg.value / total) * 100;
+        const dash = (pct / 100) * circ;
+        const gap = circ - dash;
+        const previousPct = segments
+            .slice(0, index)
+            .reduce((sum, currentSegment) => sum + ((currentSegment.value || 0) / total) * 100, 0);
+
+        return {
+            color: seg.color,
+            strokeDasharray: `${dash} ${gap}`,
+            strokeDashoffset: circ * 0.25 - previousPct * circ / 100,
+        };
+    });
 
     return (
         <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
             <svg width={size} height={size} viewBox="0 0 44 44">
-                {segments.map((seg, i) => {
-                    const pct = (seg.value / total) * 100;
-                    const dash = (pct / 100) * circ;
-                    const gap = circ - dash;
-                    const d = {
-                        strokeDasharray: `${dash} ${gap}`,
-                        strokeDashoffset: circ * 0.25 - offset * circ / 100,
-                    };
-                    offset += pct;
-                    return (
-                        <circle
-                            key={i}
-                            cx="22" cy="22" r={r}
-                            fill="none"
-                            stroke={seg.color}
-                            strokeWidth="6"
-                            strokeDasharray={d.strokeDasharray}
-                            strokeDashoffset={d.strokeDashoffset}
-                            strokeLinecap="butt"
-                            className="transition-all duration-700"
-                        />
-                    );
-                })}
+                {segmentGeometry.map((segment, index) => (
+                    <circle
+                        key={index}
+                        cx="22" cy="22" r={r}
+                        fill="none"
+                        stroke={segment.color}
+                        strokeWidth="6"
+                        strokeDasharray={segment.strokeDasharray}
+                        strokeDashoffset={segment.strokeDashoffset}
+                        strokeLinecap="butt"
+                        className="transition-all duration-700"
+                    />
+                ))}
             </svg>
             {label && (
                 <div className="absolute inset-0 flex items-center justify-center">

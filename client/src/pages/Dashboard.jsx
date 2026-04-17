@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     TrendingUp, TrendingDown, ChevronRight, Plus, Filter, Download,
@@ -7,7 +7,7 @@ import {
     CheckCircle, Star, Activity, RefreshCw
 } from 'lucide-react';
 import { getAnalytics } from '../services/analyticsService';
-import { getUser, logout } from '../services/authService';
+import { getUser } from '../services/authService';
 import api from '../services/api';
 import PlatformExecutiveView from '../components/admin/PlatformExecutiveView';
 import useIsMobile from '../hooks/useIsMobile';
@@ -99,8 +99,7 @@ const Trend = ({ value, good = true }) => {
    MOBILE DASHBOARD — Financial App Style
 ═══════════════════════════════════════════ */
 const MobileDashboard = ({ 
-    d, isReal, navigate, user, 
-    activeWidgets, setIsAddingWidget 
+    d, navigate, user, activeWidgets
 }) => {
     const total = (d?.roi?.aiGeneratedRevenue || 0) + (d?.roi?.manualRevenue || 0);
     const todayLeads = d?.roi?.newLeadsToday || d?.roi?.hotLeadsToday || 0;
@@ -262,11 +261,7 @@ const MobileDashboard = ({
    DESKTOP DASHBOARD — Uxerflow Style
 ═══════════════════════════════════════════ */
 const DesktopDashboard = ({ 
-    d, navigate, user, fetchData, 
-    isAddingWidget, setIsAddingWidget, 
-    activeWidgets, setActiveWidgets,
-    isSavingLayout, setIsSavingLayout, 
-    showSaveSuccess, setShowSaveSuccess 
+    d, navigate, setIsAddingWidget, activeWidgets
 }) => {
     const [activeTab, setActiveTab] = useState('overview');
     const [filterText, setFilterText] = useState('');
@@ -583,7 +578,7 @@ const Dashboard = () => {
     const user                      = getUser();
     const isAdmin                   = user?.email === 'adelmuhammed786@gmail.com' && !impersonating;
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             if (isAdmin) {
@@ -601,14 +596,14 @@ const Dashboard = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isAdmin]);
 
     useEffect(() => { 
         fetchData(); 
         const handleOpen = () => setIsAddingWidget(true);
         window.addEventListener('open-widget-manager', handleOpen);
         return () => window.removeEventListener('open-widget-manager', handleOpen);
-    }, [isAdmin]);
+    }, [fetchData, isAdmin]);
 
     // Persist widget selections
     useEffect(() => {
@@ -681,15 +676,11 @@ const Dashboard = () => {
 
             {isMobile
                 ? <MobileDashboard 
-                    d={d} isReal={isReal} navigate={navigate} user={user} 
-                    activeWidgets={activeWidgets} setIsAddingWidget={setIsAddingWidget}
+                    d={d} navigate={navigate} user={user} activeWidgets={activeWidgets}
                   />
                 : <DesktopDashboard 
-                    d={d} navigate={navigate} user={user} fetchData={fetchData} 
-                    isAddingWidget={isAddingWidget} setIsAddingWidget={setIsAddingWidget}
-                    activeWidgets={activeWidgets} setActiveWidgets={setActiveWidgets}
-                    isSavingLayout={isSavingLayout} setIsSavingLayout={setIsSavingLayout}
-                    showSaveSuccess={showSaveSuccess} setShowSaveSuccess={setShowSaveSuccess}
+                    d={d} navigate={navigate} setIsAddingWidget={setIsAddingWidget}
+                    activeWidgets={activeWidgets}
                   />
             }
 

@@ -53,6 +53,7 @@ export const getSystemStatus = async (req, res) => {
         // Prices: Founder Starter: 2999 (INR), Pro Intelligence: 14999 (INR), Enterprise: 25000 (INR)
         const PRICING = {
             "founder_starter": 2999,
+            "growth": 14999,
             "pro_intelligence": 14999,
             "enterprise": 25000,
             "free": 0
@@ -60,7 +61,7 @@ export const getSystemStatus = async (req, res) => {
 
         const businesses = await Business.find({});
         let netSaaSRevenue = 0;
-        let subscriptionsByPlan = { founder_starter: 0, pro_intelligence: 0, enterprise: 0, free: 0 };
+        let subscriptionsByPlan = { founder_starter: 0, growth: 0, pro_intelligence: 0, enterprise: 0, free: 0 };
 
         businesses.forEach(b => {
             const plan = b.plan || "free";
@@ -163,8 +164,14 @@ export const updateUserPlan = async (req, res) => {
         const userId = req.params.id;
         const { plan } = req.body;
 
-        const validPlans = ["free", "founder_starter", "pro_intelligence", "enterprise"];
-        if (!validPlans.includes(plan)) {
+        const normalizedPlan = plan === "starter"
+            ? "founder_starter"
+            : plan === "pro"
+                ? "growth"
+                : plan;
+
+        const validPlans = ["free", "founder_starter", "growth", "pro_intelligence", "enterprise"];
+        if (!validPlans.includes(normalizedPlan)) {
             return res.status(400).json({ message: "Invalid subscription tier." });
         }
 
@@ -177,18 +184,19 @@ export const updateUserPlan = async (req, res) => {
         const LIMITS = {
             "free": { maxConversations: 25, maxBots: 1 },
             "founder_starter": { maxConversations: 500, maxBots: 1 },
+            "growth": { maxConversations: 2500, maxBots: 1 },
             "pro_intelligence": { maxConversations: 2500, maxBots: 1 },
             "enterprise": { maxConversations: 999999, maxBots: 99 }
         };
 
         // If downgrading from pro/enterprise, forcefully disable the WhatsApp Bot
-        if (plan === "free") {
+        if (normalizedPlan === "free" || normalizedPlan === "founder_starter") {
             business.whatsappConfig.isActive = false;
         }
 
-        business.plan = plan;
-        business.maxConversations = LIMITS[plan].maxConversations;
-        business.maxBots = LIMITS[plan].maxBots;
+        business.plan = normalizedPlan;
+        business.maxConversations = LIMITS[normalizedPlan].maxConversations;
+        business.maxBots = LIMITS[normalizedPlan].maxBots;
         
         // Reset usage on plan change
         business.conversationsUsed = 0;
@@ -198,7 +206,7 @@ export const updateUserPlan = async (req, res) => {
         
         await business.save();
 
-        res.json({ message: `Subscription correctly updated to ${plan.toUpperCase()}`, plan });
+        res.json({ message: `Subscription correctly updated to ${normalizedPlan.toUpperCase()}`, plan: normalizedPlan });
     } catch (error) {
         console.error("Admin: Error updating user plan", error);
         res.status(500).json({ message: "Server error during plan update." });

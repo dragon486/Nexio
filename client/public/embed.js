@@ -63,7 +63,7 @@
                     iframe.style.borderRadius = '32px';
                 }
             }
-        } catch (e) {
+        } catch {
             // Ignore non-json messages
         }
     });

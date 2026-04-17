@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     DollarSign, Users, Zap, CheckCircle, 
@@ -24,8 +24,6 @@ const InteractiveHeroDemo = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [intelligenceResult, setIntelligenceResult] = useState(null);
     const [hasSent, setHasSent] = useState(false);
-    const scrollRef = useRef(null);
-
     const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
     const handleSelectLead = (lead) => {

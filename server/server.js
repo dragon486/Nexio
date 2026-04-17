@@ -6,39 +6,30 @@ import connectDB, { disconnectDB } from "./src/config/db.js";
 import { runtimeConfig, validateRuntimeConfig, getRuntimeWarnings } from "./src/config/env.js";
 import { initSocket } from "./src/utils/socket.js";
 import { initEmailSyncService, stopEmailSyncService } from "./src/services/emailSyncService.js";
+import metricsService from "./src/services/metricsService.js";
+import logger from "./src/utils/logger.js";
 import fs from 'fs';
 import path from 'path';
 
-// Log to file for debugging
-const logFile = fs.createWriteStream(path.join(process.cwd(), 'debug.log'), { flags: 'a' });
-const logStdout = process.stdout;
+// ... existing logger setup ...
 
-console.log = (...args) => {
-    logFile.write(new Date().toISOString() + ' [INFO] ' + args.join(' ') + '\n');
-    logStdout.write(args.join(' ') + '\n');
-};
-console.error = (...args) => {
-    logFile.write(new Date().toISOString() + ' [ERROR] ' + args.join(' ') + '\n');
-    logStdout.write(args.join(' ') + '\n');
-};
-
-validateRuntimeConfig();
-getRuntimeWarnings().forEach((warning) => {
-    console.warn(`[Startup Warning] ${warning}`);
-});
-
-const PORT = runtimeConfig.port;
+const PORT = runtimeConfig.port || 8080;
 const server = createServer(app);
+let flushInterval;
 
-const startServer = async () => {
     await connectDB();
-
-    initSocket(server);
+ 
+    await initSocket(server);
     initEmailSyncService();
+
+    // Mission-Critical: Metrics Persistence Flush (15m cycle)
+    flushInterval = setInterval(() => {
+        metricsService.flushToMongo();
+    }, 15 * 60 * 1000);
 
     await new Promise((resolve) => {
         server.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+            logger.info(`Server running on port ${PORT}`);
             resolve();
         });
     });
@@ -52,7 +43,12 @@ const shutdown = async (signal) => {
     }
 
     shuttingDown = true;
-    console.log(`[Shutdown] Received ${signal}. Draining services...`);
+    logger.warn(`[Shutdown] Received ${signal}. Draining services...`);
+
+    if (flushInterval) clearInterval(flushInterval);
+    
+    // Final defensive flush
+    await metricsService.flushToMongo();
 
     stopEmailSyncService();
 
@@ -86,3 +82,6 @@ startServer().catch((error) => {
     console.error("[Startup] Failed to boot server:", error);
     process.exit(1);
 });
+
+// Arlo.ai Production Pipeline Active
+// Built for Scale & Automated Deployment

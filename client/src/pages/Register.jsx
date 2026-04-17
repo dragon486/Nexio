@@ -3,10 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import Button from '../components/ui/Button';
 import { register } from '../services/authService';
-import { Lock, Mail, User } from 'lucide-react';
+import { Building2, Lock, Mail, User } from 'lucide-react';
 
 const Register = () => {
     const [name, setName] = useState('');
+    const [businessName, setBusinessName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -18,7 +19,7 @@ const Register = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await register(name, email, password); // Assuming register returns a response object
+            const response = await register(name, email, password, businessName);
             if (response.token) {
                 localStorage.setItem('token', response.token);
                 localStorage.setItem('user', JSON.stringify(response.user));
@@ -29,7 +30,11 @@ const Register = () => {
                 setError(response.message || 'Registration successful, but no token received.');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed');
+            setError(
+                err.response?.data?.errors?.[0]?.message ||
+                err.response?.data?.message ||
+                'Registration failed'
+            );
         } finally {
             setLoading(false);
         }
@@ -70,15 +75,30 @@ const Register = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Business Name</label>
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Full Name</label>
                         <div className="relative group">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
                             <input
                                 type="text"
                                 className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
-                                placeholder="Quantum Corp"
+                                placeholder="Adele Muhammed"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Business Name</label>
+                        <div className="relative group">
+                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
+                            <input
+                                type="text"
+                                className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
+                                placeholder="Quantum Corp"
+                                value={businessName}
+                                onChange={(e) => setBusinessName(e.target.value)}
                                 required
                             />
                         </div>

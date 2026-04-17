@@ -33,7 +33,6 @@ export default function NexioLocalCustomers() {
 
     useEffect(() => {
         if (!business?._id) return;
-        setLoading(true);
         nexioLocalService.getCustomers(business._id, { search, tag, membership, page, limit: 20 })
             .then(data => { setCustomers(data.customers || []); setTotal(data.total || 0); })
             .finally(() => setLoading(false));

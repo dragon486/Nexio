@@ -22,7 +22,7 @@ export const getMe = async (req, res) => {
 };
 
 const getOAuth2Client = () => {
-    const apiUrl = (process.env.API_URL || 'http://localhost:8000').trim().replace(/\/$/, "");
+    const apiUrl = (process.env.API_URL || 'http://localhost:8080').trim().replace(/\/$/, "");
     const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim().replace(/^"|"$/g, '');
     const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").trim().replace(/^"|"$/g, '');
 
@@ -35,7 +35,8 @@ const getOAuth2Client = () => {
 
 export const register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email: rawEmail, password, businessName } = req.body;
+        const email = rawEmail ? rawEmail.trim().toLowerCase() : "";
         console.log("📝 Registering user:", email);
 
         const existing = await User.findOne({ email });
@@ -55,7 +56,7 @@ export const register = async (req, res) => {
         console.log("👤 User created:", user._id);
 
         const business = await Business.create({
-            name: `${name}'s Business`,
+            name: businessName?.trim() || `${name}'s Business`,
             owner: user._id,
         });
         console.log("🏢 Business created:", business._id);
@@ -97,7 +98,8 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email: rawEmail, password } = req.body;
+        const email = rawEmail ? rawEmail.trim().toLowerCase() : "";
         console.log("🔑 Login attempt for:", email);
 
         const user = await User.findOne({ email });

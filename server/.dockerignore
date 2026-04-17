@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+logs
+.env
+.git
+.DS_Store
+stress-results
+test
+README.md
+Dockerfile
+docker-compose.yml

@@ -2,7 +2,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import Lead from "../src/models/Lead.js";
 
-const BASE_URL = (process.env.SMOKE_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/+$/, "");
+const BASE_URL = (process.env.SMOKE_BASE_URL || "http://127.0.0.1:8080/api").replace(/\/+$/, "");
 const TEST_EMAIL = process.env.SMOKE_TEST_EMAIL || "tony.stark@starkindustries.local";
 const TEST_PASSWORD = process.env.SMOKE_TEST_PASSWORD || "password123";
 

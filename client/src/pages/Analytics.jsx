@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAnalytics } from '../services/analyticsService';
 import { 
@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { GaugeChart, Sparkline, Heatmap, DonutChart } from '../components/ui/OrbitCharts';
-import useIsMobile from '../hooks/useIsMobile';
 import DateFilter from '../components/ui/DateFilter';
 import { motion } from 'framer-motion';
 
@@ -17,9 +16,8 @@ const Analytics = () => {
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState('7D');
-    const isMobile = useIsMobile();
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getAnalytics(dateRange);
@@ -29,11 +27,11 @@ const Analytics = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [dateRange]);
 
     useEffect(() => {
         fetchData();
-    }, [dateRange]);
+    }, [fetchData]);
 
     const displayData = useMemo(() => {
         if (analytics && !analytics.isDemo) return analytics;

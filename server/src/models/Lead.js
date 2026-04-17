@@ -70,6 +70,14 @@ const leadSchema = new mongoose.Schema(
         convertedAt: { type: Date, default: null },
         dealSize: { type: Number, default: 0 },
         isSample: { type: Boolean, default: false },
+        processingStatus: {
+            type: String,
+            enum: ["pending", "processing", "completed", "failed"],
+            default: "pending",
+        },
+        whatsappSentAt: { type: Date, default: null },
+        emailSentAt: { type: Date, default: null },
+        lastProcessingError: String,
     },
     { timestamps: true }
 );

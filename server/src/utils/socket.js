@@ -1,15 +1,35 @@
 import { Server } from "socket.io";
+import { createClient } from "redis";
+import { createAdapter } from "@socket.io/redis-adapter";
 import { runtimeConfig } from "../config/env.js";
+import logger from "./logger.js";
 
 let io;
 
-export const initSocket = (server) => {
+export const initSocket = async (server) => {
     io = new Server(server, {
         cors: {
             origin: runtimeConfig.clientUrl,
             methods: ["GET", "POST"],
         },
     });
+
+    // MISSION-CRITICAL: Redis Adapter for multi-instance sync
+    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL;
+    if (redisUrl) {
+        try {
+            const pubClient = createClient({ url: redisUrl });
+            const subClient = pubClient.duplicate();
+
+            await Promise.all([pubClient.connect(), subClient.connect()]);
+            
+            io.adapter(createAdapter(pubClient, subClient));
+            logger.info("📡 [Socket.io] Redis Adapter enabled. Cross-instance sync active.");
+        } catch (err) {
+            logger.error("❌ [Socket.io] Failed to connect Redis Adapter:", err);
+            // Fallback to local adapter in dev
+        }
+    }
 
     io.on("connection", (socket) => {
         console.log("🔌 New client connected:", socket.id);

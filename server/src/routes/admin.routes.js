@@ -2,25 +2,25 @@ import express from "express";
 import { protect } from "../middlewares/authMiddleware.js";
 import { isAdmin } from "../middlewares/adminMiddleware.js";
 import { getSystemStatus, getAllUsers, updateUserPlan, deleteUser, impersonateUser } from "../controllers/admin.controller.js";
+import { getQueueStats, retryFailedJobs, purgeDLQ } from "../controllers/queue.controller.js";
 
 const router = express.Router();
 
 // All routes must pass through protect AND isAdmin
 router.use(protect, isAdmin);
 
-// GET /api/admin/system-status
+// System Management
 router.get("/system-status", getSystemStatus);
-
-// GET /api/admin/users
 router.get("/users", getAllUsers);
 
-// PUT /api/admin/users/:id/plan
+// Queue Management
+router.get("/queues/stats", getQueueStats);
+router.post("/queues/:queueName/retry", retryFailedJobs);
+router.post("/queues/:queueName/purge", purgeDLQ);
+
+// Client Node Management
 router.put("/users/:id/plan", updateUserPlan);
-
-// DELETE /api/admin/users/:id
 router.delete("/users/:id", deleteUser);
-
-// POST /api/admin/impersonate/:id
 router.post("/impersonate/:id", impersonateUser);
 
 export default router;

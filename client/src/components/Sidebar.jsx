@@ -7,14 +7,12 @@ import {
     Sparkles
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useTheme } from '../lib/theme-context';
 import { logout, getUser } from '../services/authService';
 
 const Sidebar = ({ isMinimized, toggleMinimize, isMobileOpen, closeMobile }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const user = getUser();
-    const { theme } = useTheme();
     const isAdmin = user?.email === 'adelmuhammed786@gmail.com';
     const [search, setSearch] = useState('');
 

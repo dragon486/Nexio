@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 import Button from '../components/ui/Button';
-import { login, googleLogin } from '../services/authService';
+import { login } from '../services/authService';
 import { Lock, Mail } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -18,7 +17,11 @@ const Login = () => {
             await login(email, password);
             navigate('/dashboard');
         } catch (error) {
-            setError(error.response?.data?.message || 'Invalid credentials');
+            setError(
+                error.response?.data?.errors?.[0]?.message ||
+                error.response?.data?.message ||
+                'Invalid credentials'
+            );
         }
     };
 
@@ -105,6 +108,7 @@ const Login = () => {
                     </div>
 
                     <div className="flex justify-center">
+                        {/* Temporarily disabled Google Login to prove 401s are from Google GSI
                         <GoogleLogin
                             onSuccess={async (credentialResponse) => {
                                 try {
@@ -125,7 +129,12 @@ const Login = () => {
                             shape="pill"
                             width="100%"
                         />
+                        */}
+                        <div className="text-center text-xs text-muted-foreground w-full p-4 border border-dashed rounded-xl">
+                            Google SSO temporarily hidden for diagnostics.
+                        </div>
                     </div>
+
                 </div>
 
                 <div className="mt-8 text-center text-[11px] font-bold uppercase tracking-widest space-y-4">

@@ -34,6 +34,79 @@ const steps = [
     }
 ];
 
+const StoryStepPanel = ({ smoothProgress, step, index }) => {
+    const start = 0.1 + (index * 0.3);
+    const end = 0.35 + (index * 0.3);
+    const opacity = useTransform(
+        smoothProgress,
+        [start - 0.05, start + 0.05, end - 0.05, end + 0.05],
+        [0, 1, 1, 0]
+    );
+    const translateY = useTransform(
+        smoothProgress,
+        [start - 0.05, start + 0.05, end - 0.05, end + 0.05],
+        [60, 0, 0, -60]
+    );
+
+    return (
+        <motion.div
+            style={{ opacity, y: translateY }}
+            className="absolute inset-0 flex flex-col justify-center text-center lg:text-left pointer-events-none"
+        >
+            <div className={`flex items-center justify-center lg:justify-start gap-4 mb-6 md:mb-10 ${step.color}`}>
+                <div className="p-3 md:p-4 bg-current/10 rounded-2xl border border-current/20 shadow-xl">
+                    {step.icon}
+                </div>
+                <span className="text-[12px] font-bold tracking-tight opacity-40">{step.step}</span>
+            </div>
+            <h2 className="text-4xl sm:text-6xl lg:text-[84px] font-bold tracking-tight mb-6 md:mb-10 text-foreground leading-[1] transition-all">
+                {step.title}
+            </h2>
+            <p className="text-xl lg:text-2xl text-text-secondary font-medium max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                {step.description}
+            </p>
+        </motion.div>
+    );
+};
+
+const LeadFeedCard = ({ smoothProgress, lead, index }) => {
+    const x = useTransform(smoothProgress, [0.4 + (index * 0.05), 0.45 + (index * 0.05)], [-20, 0]);
+
+    return (
+        <motion.div
+            style={{ x }}
+            className={`p-4 rounded-xl border border-white/5 bg-white/[0.02] flex items-center justify-between ${lead.urgent ? 'ring-1 ring-emerald-500/20' : ''}`}
+        >
+            <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${lead.urgent ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                    <Users size={14} />
+                </div>
+                <div className="text-left">
+                    <div className="text-xs font-black text-white leading-none mb-1">{lead.name}</div>
+                    <div className="text-[9px] text-zinc-500 font-bold">{lead.status}</div>
+                </div>
+            </div>
+            <div className={`text-[10px] font-black ${lead.urgent ? 'text-emerald-500' : 'text-zinc-600'}`}>{lead.score}</div>
+        </motion.div>
+    );
+};
+
+const RevenueBar = ({ smoothProgress, height, index }) => {
+    const step3Progress = useTransform(smoothProgress, [0.75, 0.9], [0, 1]);
+    const opacity = useTransform(smoothProgress, [0.7 + (index * 0.02), 0.8 + (index * 0.02)], [0.2, 1]);
+
+    return (
+        <motion.div
+            style={{
+                height: `${height}%`,
+                scaleY: step3Progress,
+                opacity,
+            }}
+            className="flex-1 bg-gradient-to-t from-emerald-500/80 via-emerald-500/30 to-transparent rounded-t-2xl origin-bottom shadow-[0_0_40px_rgba(16,185,129,0.3)]"
+        />
+    );
+};
+
 const ShowcaseSection = () => {
     const sectionRef = useRef(null);
     const { scrollYProgress } = useScroll({
@@ -78,41 +151,14 @@ const ShowcaseSection = () => {
                     
                     {/* 📝 STORYTELLING (STILL LOCKED: DO NOT CHANGE RANGES) */}
                     <div className="relative h-full flex items-center">
-                        {steps.map((step, index) => {
-                            const start = 0.1 + (index * 0.3);
-                            const end = 0.35 + (index * 0.3);
-                            
-                            const opacity = useTransform(smoothProgress, 
-                                [start - 0.05, start + 0.05, end - 0.05, end + 0.05], 
-                                [0, 1, 1, 0]
-                            );
-
-                            const translateY = useTransform(smoothProgress,
-                                [start - 0.05, start + 0.05, end - 0.05, end + 0.05],
-                                [60, 0, 0, -60]
-                            );
-
-                            return (
-                                <motion.div 
-                                    key={step.id}
-                                    style={{ opacity, y: translateY }}
-                                    className="absolute inset-0 flex flex-col justify-center text-center lg:text-left pointer-events-none"
-                                >
-                                    <div className={`flex items-center justify-center lg:justify-start gap-4 mb-6 md:mb-10 ${step.color}`}>
-                                        <div className="p-3 md:p-4 bg-current/10 rounded-2xl border border-current/20 shadow-xl">
-                                            {step.icon}
-                                        </div>
-                                        <span className="text-[12px] font-bold tracking-tight opacity-40">{step.step}</span>
-                                    </div>
-                                    <h2 className="text-4xl sm:text-6xl lg:text-[84px] font-bold tracking-tight mb-6 md:mb-10 text-foreground leading-[1] transition-all">
-                                        {step.title}
-                                    </h2>
-                                    <p className="text-xl lg:text-2xl text-text-secondary font-medium max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                                        {step.description}
-                                    </p>
-                                </motion.div>
-                            );
-                        })}
+                        {steps.map((step, index) => (
+                            <StoryStepPanel
+                                key={step.id}
+                                smoothProgress={smoothProgress}
+                                step={step}
+                                index={index}
+                            />
+                        ))}
                     </div>
 
                     {/* 🖥️ REAL DASHBOARD MOCKUP (V8 HIGH-FIDELITY SYNC) */}
@@ -199,23 +245,13 @@ const ShowcaseSection = () => {
                                             { name: "Dynamic Retail", score: 98, status: "Active", urgent: true },
                                             { name: "Nebula Corp", score: 84, status: "Indexing", urgent: false },
                                             { name: "Vertex Tech", score: 72, status: "Syncing", urgent: false }
-                                        ].map((lead, i) => (
-                                            <motion.div 
-                                                key={i}
-                                                style={{ x: useTransform(smoothProgress, [0.4 + (i * 0.05), 0.45 + (i * 0.05)], [-20, 0]) }}
-                                                className={`p-4 rounded-xl border border-white/5 bg-white/[0.02] flex items-center justify-between ${lead.urgent ? 'ring-1 ring-emerald-500/20' : ''}`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${lead.urgent ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                                                        <Users size={14} />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <div className="text-xs font-black text-white leading-none mb-1">{lead.name}</div>
-                                                        <div className="text-[9px] text-zinc-500 font-bold">{lead.status}</div>
-                                                    </div>
-                                                </div>
-                                                <div className={`text-[10px] font-black ${lead.urgent ? 'text-emerald-500' : 'text-zinc-600'}`}>{lead.score}</div>
-                                            </motion.div>
+                                        ].map((lead, index) => (
+                                            <LeadFeedCard
+                                                key={lead.name}
+                                                smoothProgress={smoothProgress}
+                                                lead={lead}
+                                                index={index}
+                                            />
                                         ))}
                                     </div>
 
@@ -302,20 +338,14 @@ const ShowcaseSection = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-end h-[140px] gap-4">
-                                            {[15, 35, 25, 45, 30, 55, 100].map((h, i) => {
-                                                const step3Progress = useTransform(smoothProgress, [0.75, 0.9], [0, 1]);
-                                                return (
-                                                    <motion.div 
-                                                        key={i}
-                                                        style={{ 
-                                                            height: `${h}%`, 
-                                                            scaleY: step3Progress,
-                                                            opacity: useTransform(smoothProgress, [0.7 + (i * 0.02), 0.8 + (i * 0.02)], [0.2, 1])
-                                                        }}
-                                                        className="flex-1 bg-gradient-to-t from-emerald-500/80 via-emerald-500/30 to-transparent rounded-t-2xl origin-bottom shadow-[0_0_40px_rgba(16,185,129,0.3)]"
-                                                    />
-                                                );
-                                            })}
+                                            {[15, 35, 25, 45, 30, 55, 100].map((height, index) => (
+                                                <RevenueBar
+                                                    key={index}
+                                                    smoothProgress={smoothProgress}
+                                                    height={height}
+                                                    index={index}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 </motion.div>

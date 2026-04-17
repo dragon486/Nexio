@@ -34,7 +34,7 @@ export default function NexioLocalLayout() {
             .then(setBusiness)
             .catch(() => navigate('/dashboard/nexio-local/onboarding'))
             .finally(() => setLoading(false));
-    }, []);
+    }, [navigate]);
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen local-bg-primary">

@@ -53,7 +53,7 @@ const businessSchema = new mongoose.Schema(
         },
         plan: {
             type: String,
-            enum: ["free", "founder_starter", "growth", "enterprise"],
+            enum: ["free", "starter", "founder_starter", "pro", "growth", "pro_intelligence", "enterprise"],
             default: "free"
         },
         subscriptionExpiresAt: {

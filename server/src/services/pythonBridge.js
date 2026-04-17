@@ -11,8 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 export const runLocalScoring = (leadData) => {
     return new Promise((resolve, reject) => {
-        // Use absolute path for robustness
-        const pythonPath = "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3";
+        const pythonPath = process.env.PYTHON_PATH || "python3";
         const pythonProcess = spawn(pythonPath, [path.join(__dirname, "localScorer.py")]);
 
         let output = "";

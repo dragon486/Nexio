@@ -3,6 +3,7 @@ import { runLocalScoring } from "./pythonBridge.js";
 import { processWithOllama } from "./ollamaService.js";
 import { normalizeAiResponse } from "../utils/aiResponse.js";
 import { runtimeConfig } from "../config/env.js";
+import { isMockMode, getSimulatedLatency, sleep } from "../utils/simulationUtils.js";
 
 const genAI = new GoogleGenerativeAI(runtimeConfig.geminiApiKey);
 
@@ -18,6 +19,27 @@ let apiFallbackReason = null;
 let apiFallbackIsDaily = false;
 
 export const processLead = async (lead, history = [], summary = "", businessName = "NEXIO", senderName = "the Sales Team", context = "email") => {
+    // [SIMULATION MODE] Bypassing LLM costs during load tests
+    if (isMockMode()) {
+        const latency = getSimulatedLatency();
+        await sleep(latency);
+        
+        const testId = lead.meta?.testRunId || "LOAD_TEST";
+        
+        return {
+            aiScore: Math.floor(Math.random() * 40) + 60, // Ensure high score for follow-up testing
+            aiPriority: "high",
+            aiNotes: `[SIMULATION] Deterministic response (${latency}ms). Run: ${testId}`,
+            aiResponse: normalizeAiResponse({
+                emailSubject: `Re: Your Inquiry - ${businessName}`,
+                emailBody: `Thank you for reaching out to ${businessName}. This is a simulated high-intent follow-up.`,
+                whatsapp: "Hi! This is a simulated automation message.",
+                generatedAt: new Date()
+            }),
+            newSummary: "Simulated conversation context."
+        };
+    }
+
     try {
         // Fast-fail if we are in a known quota outage
         if (apiFallbackUntil && Date.now() < apiFallbackUntil) {

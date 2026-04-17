@@ -40,7 +40,7 @@ async function run() {
     console.log("Using API Key:", business.publicKey);
 
     try {
-        const res = await axios.post("http://localhost:8000/api/leads/capture", {
+        const res = await axios.post("http://localhost:8080/api/leads/capture", {
             name: "Sarah Jenkins",
             email: "sarah.j@example.net",
             phone: "+1-555-0199",

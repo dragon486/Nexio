@@ -162,7 +162,7 @@ const PlatformExecutiveView = ({ status, clients, onImpersonate, onDeleteClient 
                                     <td className="px-8 py-8">
                                         <div className={cn(
                                             "flex items-center gap-2 px-3 py-1.5 rounded-xl w-fit border text-[9px] font-black uppercase tracking-widest",
-                                            c.business?.plan === 'pro_intelligence' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 shadow-lg shadow-purple-500/10' :
+                                            c.business?.plan === 'growth' || c.business?.plan === 'pro_intelligence' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 shadow-lg shadow-purple-500/10' :
                                             c.business?.plan === 'founder_starter' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
                                             'bg-amber-500/10 text-amber-500 border-amber-500/20'
                                         )}>
@@ -176,7 +176,7 @@ const PlatformExecutiveView = ({ status, clients, onImpersonate, onDeleteClient 
                                     <td className="px-8 py-8">
                                         <div className="text-sm font-black tracking-tighter mb-2">
                                             {c.business?.plan === 'founder_starter' ? '₹2,999/mo' : 
-                                             c.business?.plan === 'pro_intelligence' ? '₹14,999/mo' : 
+                                             c.business?.plan === 'growth' || c.business?.plan === 'pro_intelligence' ? '₹14,999/mo' : 
                                              c.business?.plan === 'enterprise' ? '₹25,000/mo' : '₹0 (Trial)'}
                                         </div>
                                         <div className="space-y-2 max-w-[150px]">

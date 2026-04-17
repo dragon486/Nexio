@@ -13,24 +13,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 const AdminDashboard = () => {
     const [status, setStatus] = useState(null);
     const [clients, setClients] = useState([]);
+    const [queueStats, setQueueStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [statusFilter] = useState('ALL');
     const [isSyncing, setIsSyncing] = useState(false);
-    const [deleteLoading, setDeleteLoading] = useState(null);
     const [selectedClient, setSelectedClient] = useState(null);
-    const [reportLoading, setReportLoading] = useState(false);
     const [planLoading, setPlanLoading] = useState(false);
+
+    // Safety Cooldown States
+    const [purgeCooldown, setPurgeCooldown] = useState({}); // { queueName: seconds }
+    const [actionLoading, setActionLoading] = useState(false);
 
     const fetchAdminData = async () => {
         setIsSyncing(true);
         try {
-            const [statusRes, usersRes] = await Promise.all([
+            const [statusRes, usersRes, queueRes] = await Promise.all([
                 api.get('/admin/system-status'),
-                api.get('/admin/users')
+                api.get('/admin/users'),
+                api.get('/admin/queues/stats')
             ]);
             setStatus(statusRes.data);
             setClients(usersRes.data);
+            setQueueStats(queueRes.data);
         } catch (error) {
             console.error('Error fetching admin data:', error);
         } finally {
@@ -43,10 +48,59 @@ const AdminDashboard = () => {
         fetchAdminData();
     }, []);
 
+    // ─────────────────────────────────────────────────────────────
+    // SAFETY OVERRIDE LOGIC (DLQ Management)
+    // ─────────────────────────────────────────────────────────────
+    
+    const startPurgeCooldown = (queueName) => {
+        setPurgeCooldown(prev => ({ ...prev, [queueName]: 10 }));
+        const interval = setInterval(() => {
+            setPurgeCooldown(prev => {
+                const current = prev[queueName];
+                if (current <= 1) {
+                    clearInterval(interval);
+                    return { ...prev, [queueName]: 0 };
+                }
+                return { ...prev, [queueName]: current - 1 };
+            });
+        }, 1000);
+    };
+
+    const handleRetryAll = async (queueName) => {
+        if (!window.confirm(`Force retry all failed jobs in the ${queueName.toUpperCase()} pipeline? This will trigger side-effects immediately.`)) return;
+        
+        setActionLoading(true);
+        try {
+            await api.post(`/admin/queues/${queueName}/retry`);
+            await fetchAdminData();
+        } catch (error) {
+            console.error('Retry failed', error);
+            alert('Queue Error: Could not re-enqueue jobs.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handlePurgeQueue = async (queueName) => {
+        if (!window.confirm(`CRITICAL ACTION: Purge all failed jobs from ${queueName.toUpperCase()}? This is irreversible and will delete potential customer outreach data.`)) return;
+        
+        setActionLoading(true);
+        try {
+            await api.post(`/admin/queues/${queueName}/purge`);
+            setPurgeCooldown(prev => ({ ...prev, [queueName]: null }));
+            await fetchAdminData();
+        } catch (error) {
+            console.error('Purge failed', error);
+            alert('Security Error: Could not purge DLQ.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+    
+    // Original methods preserved...
     const handleDeleteUser = async (userId, userName) => {
         if (!window.confirm(`Are you absolutely sure you want to PURGE all data for ${userName}? This action is irreversible.`)) return;
         
-        setDeleteLoading(userId);
         try {
             await api.delete(`/admin/users/${userId}`);
             await fetchAdminData();
@@ -54,19 +108,23 @@ const AdminDashboard = () => {
         } catch (error) {
             console.error("Delete failed", error);
             alert("Security Error: Could not purge client node.");
-        } finally {
-            setDeleteLoading(null);
         }
     };
 
     const handleUpdatePlan = async (userId, newPlan) => {
+        const normalizedPlan = newPlan === 'starter'
+            ? 'founder_starter'
+            : newPlan === 'pro'
+                ? 'growth'
+                : newPlan;
+
         setPlanLoading(true);
         try {
-            await api.put(`/admin/users/${userId}/plan`, { plan: newPlan });
+            await api.put(`/admin/users/${userId}/plan`, { plan: normalizedPlan });
             await fetchAdminData();
             setSelectedClient(prev => ({
                 ...prev,
-                business: { ...prev.business, plan: newPlan }
+                business: { ...prev.business, plan: normalizedPlan }
             }));
         } catch (error) {
             console.error("Update plan failed", error);
@@ -136,7 +194,7 @@ const AdminDashboard = () => {
                         Executive <span className="text-blue-500">Oversight</span>
                     </h2>
                     <p className="text-gray-500 font-bold text-[14px] leading-relaxed italic opacity-80 uppercase tracking-tight max-w-2xl">
-                        Global control center for NEXIO. Monitor node cluster health, financial vector scaling, and high-tier credential management across the entire SaaS environment.
+                        Global control center for Arlo.ai. Monitor node cluster health, cross-pipeline neural throughput, and high-tier credential management.
                     </p>
                 </div>
                 
@@ -160,7 +218,85 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* 2. Primary KPI Grid — Noir Matrix */}
+            {/* 2. Neural Pipeline Monitor — Hardware Noir Grid */}
+            <div className="mb-12">
+                <div className="flex items-center gap-3 mb-8">
+                    <Activity size={20} className="text-blue-500" />
+                    <h3 className="text-[12px] font-black text-[#12131a] uppercase tracking-[0.4em] italic">Neural Pipeline Matrix (Real-Time)</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {['lead', 'email', 'whatsapp'].map((qName) => {
+                        const q = queueStats?.[qName] || { active: 0, waiting: 0, failed: 0, completed: 0 };
+                        const cooldown = purgeCooldown[qName];
+                        
+                        return (
+                            <div key={qName} className="bg-[#12131a] border border-white/5 rounded-[40px] p-8 group shadow-2xl transition-all hover:bg-black/40">
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center">
+                                        {qName === 'lead' ? <Activity size={20} className="text-blue-400" /> : 
+                                         qName === 'email' ? <Globe size={20} className="text-amber-400" /> : 
+                                         <Zap size={20} className="text-emerald-400" />}
+                                    </div>
+                                    <div className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-widest text-gray-500 border border-white/5">
+                                        {qName} pipeline
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-3 gap-4 mb-8">
+                                    <div className="text-center">
+                                        <div className="text-xl font-black text-white italic leading-none mb-2">{q.active + q.waiting}</div>
+                                        <div className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Active</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-xl font-black text-emerald-500 italic leading-none mb-2">{q.completed}</div>
+                                        <div className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Done</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-xl font-black text-red-500 italic leading-none mb-2">{q.failed}</div>
+                                        <div className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Failed</div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 mt-4 pt-6 border-t border-white/5">
+                                    <button 
+                                        onClick={() => handleRetryAll(qName)}
+                                        disabled={q.failed === 0 || actionLoading}
+                                        className="flex-1 py-3 bg-blue-600/10 text-blue-500 text-[9px] font-black uppercase tracking-widest rounded-2xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all disabled:opacity-30"
+                                    >
+                                        Retry DLQ
+                                    </button>
+                                    
+                                    {cooldown > 0 ? (
+                                        <button 
+                                            className="flex-1 py-3 bg-red-600/20 text-red-500 text-[9px] font-black uppercase tracking-widest rounded-2xl border border-red-500/20 cursor-wait"
+                                        >
+                                            Hold ({cooldown}s)
+                                        </button>
+                                    ) : cooldown === 0 ? (
+                                        <button 
+                                            onClick={() => handlePurgeQueue(qName)}
+                                            className="flex-1 py-3 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest rounded-2xl hover:bg-red-700 transition-all animate-pulse"
+                                        >
+                                            Confirm Purge
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => startPurgeCooldown(qName)}
+                                            disabled={q.failed === 0 || actionLoading}
+                                            className="flex-1 py-3 bg-white/5 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded-2xl border border-white/5 hover:text-red-500 transition-all disabled:opacity-30"
+                                        >
+                                            Purge
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* 3. Primary KPI Grid — Noir Matrix */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                 {[
                     { label: 'Total Nodes', val: status.users, icon: Users, color: 'text-blue-400' },
@@ -185,7 +321,7 @@ const AdminDashboard = () => {
                 ))}
             </div>
 
-            {/* 3. Operational Insights & Visualization — Noir Layout */}
+            {/* 4. Operational Insights & Visualization — Noir Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
                 <div className="lg:col-span-2 bg-[#12131a] border border-white/5 rounded-[48px] p-10 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px]" />
@@ -264,7 +400,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* 4. Registered Nodes Matrix — Noir Table Style */}
+            {/* 5. Registered Nodes Matrix — Noir Table Style */}
             <div className="bg-white border border-gray-100 rounded-[48px] overflow-hidden shadow-2xl relative">
                 <div className="p-10 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-8 bg-gray-50/50">
                     <div>
@@ -420,8 +556,8 @@ const AdminDashboard = () => {
                                             className="w-full bg-[#0a0b0f] border-0 text-white text-[13px] font-black uppercase italic tracking-widest rounded-2xl p-5 focus:ring-4 focus:ring-blue-500/20 transition-all cursor-pointer shadow-2xl"
                                         >
                                             <option value="free">Alpha Tier (Trial)</option>
-                                            <option value="starter">Founder Tier (Starter)</option>
-                                            <option value="pro">Intelligence Tier (Pro)</option>
+                                            <option value="founder_starter">Founder Tier (Starter)</option>
+                                            <option value="growth">Intelligence Tier (Pro)</option>
                                             <option value="enterprise">Authority Tier (Nexus)</option>
                                         </select>
                                         <div className="mt-6 flex items-start gap-4">
