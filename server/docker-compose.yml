@@ -9,7 +9,7 @@ services:
     restart: always
 
   # API Server Role
-  arlo-api:
+  nexio-api:
     build: .
     ports:
       - "8080:8080"
@@ -24,7 +24,7 @@ services:
     restart: on-failure
 
   # Worker Role (Same image, different entrypoint)
-  arlo-worker:
+  nexio-worker:
     build: .
     command: ["node", "src/workers/index.js"]
     environment:
@@ -38,4 +38,4 @@ services:
 # Optional: Dedicated network for isolation
 networks:
   default:
-    name: arlo-net
+    name: nexio-net

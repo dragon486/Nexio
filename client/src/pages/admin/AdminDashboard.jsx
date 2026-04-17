@@ -194,7 +194,7 @@ const AdminDashboard = () => {
                         Executive <span className="text-blue-500">Oversight</span>
                     </h2>
                     <p className="text-gray-500 font-bold text-[14px] leading-relaxed italic opacity-80 uppercase tracking-tight max-w-2xl">
-                        Global control center for Arlo.ai. Monitor node cluster health, cross-pipeline neural throughput, and high-tier credential management.
+                        Global control center for Nexio. Monitor node cluster health, cross-pipeline neural throughput, and high-tier credential management.
                     </p>
                 </div>
                 

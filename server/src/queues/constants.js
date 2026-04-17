@@ -14,4 +14,4 @@ export const JOB_TYPES = {
     SEND_WHATSAPP: "send-whatsapp",
 };
 
-export const QUEUE_PREFIX = "arlo:queue";
+export const QUEUE_PREFIX = "nexio:queue";

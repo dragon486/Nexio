@@ -2,7 +2,7 @@ import redis from "../config/redis.js";
 import SystemMetric from "../models/SystemMetric.js";
 import logger from "../utils/logger.js";
 
-const METRIC_PREFIX = "arlo:metrics:";
+const METRIC_PREFIX = "nexio:metrics:";
 
 /**
  * Service for tracking real-time and historical job metrics.
@@ -57,7 +57,7 @@ class MetricsService {
             const processedHours = new Set();
 
             for (const key of keys) {
-                // key format: arlo:metrics:2026-04-17:01:queueName:status
+                // key format: nexio:metrics:2026-04-17:01:queueName:status
                 const parts = key.split(":");
                 const hourSlug = `${parts[2]}:${parts[3]}`; // 2026-04-17:01
                 const queueName = parts[4];

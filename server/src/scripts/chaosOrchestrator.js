@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import logger from "../utils/logger.js";
 
 /**
- * Chaos Orchestrator for Arlo.ai
+ * Chaos Orchestrator for Nexio
  * Targets and terminates worker processes during load tests to verify resiliency.
  */
 

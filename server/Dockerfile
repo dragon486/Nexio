@@ -1,4 +1,4 @@
-# Production Dockerfile for Arlo.ai
+# Production Dockerfile for Nexio
 # Goal: Minimal footprint, hardened security, and multi-role versatility.
 
 # Build Stage (Optional: if we had a build step, for now we just install)

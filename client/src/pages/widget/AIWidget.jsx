@@ -37,7 +37,7 @@ const AIWidget = () => {
         const width = expanded ? 380 : 320;
         
         window.parent.postMessage(JSON.stringify({
-            type: 'ARLO_WIDGET_RESIZE',
+            type: 'NEXIO_WIDGET_RESIZE',
             height,
             width,
             expanded

@@ -1,4 +1,4 @@
-name: Deploy Arlo.ai Production
+name: Deploy Nexio Production
 
 on:
   push:

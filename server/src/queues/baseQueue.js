@@ -22,7 +22,7 @@ export const defaultJobOptions = {
 };
 
 /**
- * Creates a BullMQ Queue with standard Arlo configuration
+ * Creates a BullMQ Queue with standard Nexio configuration
  */
 export const createQueue = (name) => {
     return new Queue(name, {

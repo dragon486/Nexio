@@ -2,7 +2,7 @@
     // 1. Identify where this script is loaded from to know the host URL
     var currentScript = document.currentScript;
     if (!currentScript) {
-        console.error("Arlo AI: Cannot determine script origin.");
+        console.error("Nexio: Cannot determine script origin.");
         return;
     }
 
@@ -10,13 +10,13 @@
     var baseUrl = scriptUrl.origin;
     var publicKey = scriptUrl.searchParams.get('key');
 
-    // Or check window.arloConfig as a fallback
-    if (!publicKey && window.arloConfig && window.arloConfig.key) {
-        publicKey = window.arloConfig.key;
+    // Or check window.nexioConfig as a fallback
+    if (!publicKey && window.nexioConfig && window.nexioConfig.key) {
+        publicKey = window.nexioConfig.key;
     }
 
     if (!publicKey) {
-        console.error("Arlo AI: Public key is missing. Please provide '?key=...' in the script src.");
+        console.error("Nexio: Public key is missing. Please provide '?key=...' in the script src.");
         return;
     }
 
@@ -41,7 +41,7 @@
     iframe.style.colorScheme = 'normal';
     iframe.style.borderRadius = '32px';
     iframe.style.transition = 'height 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-    iframe.title = "Arlo AI Chat Widget";
+    iframe.title = "Nexio Chat Widget";
 
     document.body.appendChild(iframe);
 
@@ -52,7 +52,7 @@
 
         try {
             var data = JSON.parse(event.data);
-            if (data.type === 'ARLO_WIDGET_RESIZE') {
+            if (data.type === 'NEXIO_WIDGET_RESIZE') {
                 iframe.style.height = data.height + 'px';
                 iframe.style.width = data.width + 'px';
                 

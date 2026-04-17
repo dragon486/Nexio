@@ -1,10 +1,10 @@
-# ⚡ Arlo.ai - Distributed AI Lead Management Engine
+# ⚡ Nexio - Distributed AI Lead Management Engine
 
-[![Version](https://img.shields.io/badge/version-2.6.0-emerald.svg)](https://arlo.ai)
-[![Tech Stack](https://img.shields.io/badge/stack-MERN+%20BullMQ+%20Redis-orange.svg)](https://arlo.ai)
-[![Safety](https://img.shields.io/badge/Idempotency-Distributed--Safe-blue.svg)](https://arlo.ai)
+[![Version](https://img.shields.io/badge/version-2.6.0-emerald.svg)](https://nexio.ai)
+[![Tech Stack](https://img.shields.io/badge/stack-MERN+%20BullMQ+%20Redis-orange.svg)](https://nexio.ai)
+[![Safety](https://img.shields.io/badge/Idempotency-Distributed--Safe-blue.svg)](https://nexio.ai)
 
-**Arlo.ai** is a high-density, multi-tenant AI ecosystem designed for hyper-growth sales teams. It combines professional CRM capabilities with a distributed "Neural Persona" engine and a mission-critical asynchronous pipeline that ensures 100% side-effect reliability across Email, WhatsApp, and Web channels.
+**Nexio** is a high-density, multi-tenant AI ecosystem designed for hyper-growth sales teams. It combines professional CRM capabilities with a distributed "Neural Persona" engine and a mission-critical asynchronous pipeline that ensures 100% side-effect reliability across Email, WhatsApp, and Web channels.
 
 ---
 
@@ -18,7 +18,7 @@
 
 ## 🏗️ System Design & Architecture
 
-Arlo.ai is architected for **Atomic Reliability** and **Distributed Execution**.
+Nexio is architected for **Atomic Reliability** and **Distributed Execution**.
 
 ### 1. Unified System Topology (v2.6 Async)
 ```mermaid
@@ -57,7 +57,7 @@ graph TB
 ## 🚀 Mission-Critical Features
 
 ### 🔐 Distributed Idempotency
-Double-messaging customers is a legacy problem. Arlo.ai uses dual-layer protection:
+Double-messaging customers is a legacy problem. Nexio uses dual-layer protection:
 - **Redis Guard**: Distributed locks ensure only one worker processes an external trigger.
 - **Atomic MongoDB Logic**: Database-level timestamps (`sentAt`) prevent re-execution during retry storms or worker crashes.
 
@@ -96,4 +96,4 @@ Double-messaging customers is a legacy problem. Arlo.ai uses dual-layer protecti
 ---
 
 ## 📄 License
-Arlo.ai is licensed under the **MIT License**. Build the future of AI CRM.
+Nexio is licensed under the **MIT License**. Build the future of AI CRM.

@@ -6,7 +6,7 @@ import stressTestService from "../services/stressTestService.js";
 import logger from "../utils/logger.js";
 
 /**
- * High-Pressure Load Generator for Arlo.ai
+ * High-Pressure Load Generator for Nexio
  * Generates realistic lead data with fixed RNG seeds.
  */
 
