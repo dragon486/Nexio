@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
 import GlassCard from '../ui/GlassCard';
 
@@ -10,7 +11,7 @@ const plans = [
         price: "₹2,999",
         description: "Perfect for early adopters and small shops.",
         features: ["1 WhatsApp AI Bot", "500 Conversations / month", "Standard AI Personality", "Lead Scoring & CRM", "7-Day History"],
-        cta: "Claim Founder Price",
+        cta: "Start Scaling",
         popular: false
     },
     {
@@ -18,7 +19,7 @@ const plans = [
         price: "₹14,999",
         description: "For scaling growth-led businesses.",
         features: ["1 WhatsApp AI Bot", "2,500 Conversations / month", "Custom AI Tone & Knowledge", "Revenue Forecasting", "Full History + Data Export", "Priority Support"],
-        cta: "Go Pro",
+        cta: "Initiate Growth Sync",
         popular: true
     },
     {
@@ -26,12 +27,14 @@ const plans = [
         price: "₹25,000",
         description: "For high-volume sales teams.",
         features: ["Unlimited AI Bots", "Unlimited Conversations", "Custom API Integrations", "Call AI & Transcription", "Dedicated Account Manager", "White-label Dashboard"],
-        cta: "Contact Growth Team",
+        cta: "Request Consultation",
         popular: false
     }
 ];
 
 const Pricing = () => {
+    const navigate = useNavigate();
+
     return (
         <section id="pricing" className="py-32 md:py-48 px-6 relative overflow-hidden">
             {/* Dynamic Background Atmosphere */}
@@ -109,11 +112,7 @@ const Pricing = () => {
                                     <div className="relative z-10">
                                         <Button
                                             className={`${plan.popular ? 'btn-primary' : 'btn-secondary'} w-full justify-center h-14 text-base`}
-                                            onClick={() => {
-                                                const message = `Hi! I'm interested in the NEXIO ${plan.name} plan ( ${plan.price} ). Can you tell me more about how to get started?`;
-                                                const whatsappUrl = `https://wa.me/918848258969?text=${encodeURIComponent(message)}`;
-                                                window.open(whatsappUrl, '_blank');
-                                            }}
+                                            onClick={() => navigate('/contact')}
                                         >
                                             {plan.cta}
                                         </Button>

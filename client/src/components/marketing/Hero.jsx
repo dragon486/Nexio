@@ -5,6 +5,7 @@ import { ArrowRight, Play, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import DashboardPreview from './DashboardPreview';
 import InteractiveHeroDemo from './InteractiveHeroDemo';
+import ShinyText from '../ui/ShinyText';
 
 const BlueprintFlow = () => {
     // Randomized circuit paths based on the brand logo path
@@ -76,8 +77,6 @@ const BlueprintFlow = () => {
 };
 
 const Hero = () => {
-    // High-fidelity SVG animation replaces fragile Lottie fetch
-
     return (
         <section className="hero overflow-hidden bg-bg-primary relative">
             {/* Tech Grid Overlay */}
@@ -100,9 +99,9 @@ const Hero = () => {
                     style={{ fontFamily: "'Outfit', sans-serif" }}
                 >
                     Scale your revenue with the world's first<br />
-                    <span className="gradient-text italic text-4xl md:text-7xl lg:text-[88px]">
+                    <ShinyText speed={5} className="gradient-text italic text-4xl md:text-7xl lg:text-[88px]">
                         Autonomous AI Sales Workforce.
-                    </span>
+                    </ShinyText>
                 </motion.h1>
 
                 <motion.p

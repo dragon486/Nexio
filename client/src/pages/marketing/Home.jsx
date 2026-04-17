@@ -40,49 +40,89 @@ const Home = () => {
                             description="NEXIO transforms your sales funnel with autonomous AI agents that qualify, engage, and convert leads via WhatsApp 24/7."
                         />
                         <Hero />
-                        <ShowcaseSection />
-                        <div id="features">
-                            <Features />
-                        </div>
-                        <div id="solutions">
-                            <Solutions />
-                        </div>
-                        <div id="demo">
-                            <AnalyticsPreview />
-                        </div>
-                        <div id="pricing">
-                            <Pricing />
-                        </div>
+                        
+                        <motion.div 
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: \"-100px\" }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <ShowcaseSection />
+                        </motion.div>
 
-                        <section className="py-32 md:py-48 px-6 text-center relative overflow-hidden">
-                            <div className="max-w-5xl mx-auto bg-surface dark:bg-[#1a1a1a] border border-border/40 dark:border-white/10 rounded-3xl p-12 md:p-24 relative overflow-hidden shadow-2xl shadow-primary/5 ring-1 ring-primary/5">
-                                <div className="absolute inset-0 bg-primary/5 blur-[120px] pointer-events-none" />
-                                <h2 className="text-3xl md:text-6xl font-black text-foreground mb-8 tracking-tighter leading-tight">
+                        <motion.div 
+                            id=\"features\"
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: \"-100px\" }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <Features />
+                        </motion.div>
+
+                        <motion.div 
+                            id=\"solutions\"
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: \"-100px\" }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <Solutions />
+                        </motion.div>
+
+                        <motion.div 
+                            id=\"demo\"
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: \"-100px\" }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <AnalyticsPreview />
+                        </motion.div>
+
+                        <motion.div 
+                            id=\"pricing\"
+                            initial={{ opacity: 0, y: 50 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: \"-100px\" }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <Pricing />
+                        </motion.div>
+
+                        <motion.section 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8 }}
+                            className=\"py-32 md:py-48 px-6 text-center relative overflow-hidden\"
+                        >
+                            <div className=\"max-w-5xl mx-auto bg-surface dark:bg-[#1a1a1a] border border-border/40 dark:border-white/10 rounded-3xl p-12 md:p-24 relative overflow-hidden shadow-2xl shadow-primary/5 ring-1 ring-primary/5\">
+                                <div className=\"absolute inset-0 bg-primary/5 blur-[120px] pointer-events-none\" />
+                                <h2 className=\"text-3xl md:text-6xl font-black text-foreground mb-8 tracking-tighter leading-tight\">
                                     Ready to architect your <br />
-                                    <span className="gradient-text italic">autonomous future?</span>
+                                    <span className=\"gradient-text italic\">autonomous future?</span>
                                 </h2>
-                                <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium">
+                                <p className=\"text-xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium\">
                                     Join the next generation of sales teams using NEXIO to scale revenue with precision and speed.
                                 </p>
-                                <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
-                                    <Link to="/register" className="w-full md:w-auto">
-                                        <Button className="btn-primary btn-large w-full btn-with-arrow">
+                                <div className=\"flex flex-col md:flex-row gap-6 justify-center items-center\">
+                                    <Link to=\"/register\" className=\"w-full md:w-auto\">
+                                        <Button className=\"btn-primary btn-large w-full btn-with-arrow\">
                                             Start Free Trial
                                         </Button>
                                     </Link>
-                                    <Button 
-                                        variant="outline" 
-                                        className="btn-secondary btn-large w-full"
-                                        onClick={() => {
-                                            const message = "Hi! I'm ready to architect my autonomous sales future with NEXIO. Can we talk?";
-                                            window.open(`https://wa.me/918848258969?text=${encodeURIComponent(message)}`, '_blank');
-                                        }}
-                                    >
-                                        Talk to Founder
-                                    </Button>
+                                    <Link to=\"/contact\" className=\"w-full md:w-auto\">
+                                        <Button 
+                                            variant=\"outline\" 
+                                            className=\"btn-secondary btn-large w-full\"
+                                        >
+                                            Initiate Sync
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
-                        </section>
+                        </motion.section>
                     </motion.div>
                 )}
             </AnimatePresence>
