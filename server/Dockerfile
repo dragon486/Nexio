@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install build dependencies if needed (none currently required for pure JS)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Production Stage
 FROM node:20-slim
