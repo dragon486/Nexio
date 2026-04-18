@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
  * ShinyText Component
  * Inspired by ReactBits - Creates a moving light-ray effect over text.
  */
-const ShinyText = ({ children, className = \"\", speed = 3 }) => {
+const ShinyText = ({ children, className = "", speed = 3 }) => {
     return (
         <span 
             className={`relative inline-block overflow-hidden ${className}`}
@@ -25,9 +25,9 @@ const ShinyText = ({ children, className = \"\", speed = 3 }) => {
                 transition={{
                     duration: speed,
                     repeat: Infinity,
-                    ease: \"linear\",
+                    ease: "linear",
                 }}
-                className=\"absolute inset-0 pointer-events-none\"
+                className="absolute inset-0 pointer-events-none"
                 style={{
                     background: 'inherit',
                     WebkitBackgroundClip: 'text',

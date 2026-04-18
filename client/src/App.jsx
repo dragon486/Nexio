@@ -86,7 +86,7 @@ const App = () => {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/security" element={<SecurityPage />} />
-          <Route path="/solutions" element={<FeaturesPage />} />
+          <Route path="/solutions" element={<Navigate to="/features" replace />} />
         </Route>
 
         <Route path="/widget/:key" element={<AIWidget />} />
@@ -94,6 +94,8 @@ const App = () => {
         {/* Auth Routes */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
         {/* Protected App Routes */}
         <Route path="/onboarding" element={

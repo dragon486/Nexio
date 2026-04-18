@@ -16,7 +16,6 @@ import healthRoutes from "./routes/health.routes.js";
 import hyperlocalRoutes from "./routes/hyperlocal.routes.js";
 import hyperlocalWebhookRoutes from "./routes/hyperlocalWebhook.routes.js";
 import widgetRoutes from "./routes/widget.routes.js";
-import marketingRoutes from "./routes/marketing.js";
 import { runtimeConfig } from "./config/env.js";
 
 const app = express();
@@ -37,7 +36,7 @@ app.use((req, res, next) => {
         try {
 
             fs.appendFileSync('/tmp/webhook-log.txt', msg);
-        } catch (e) {}
+        } catch (e) { }
     });
     next();
 });
@@ -72,7 +71,6 @@ app.use("/api/hyperlocal", hyperlocalRoutes);
 app.use("/hyperlocal", hyperlocalRoutes);
 
 app.use("/api/widget", widgetRoutes);
-app.use("/api/marketing", marketingRoutes);
 app.use("/", hyperlocalRoutes); // Catch-all for stripped /:id/conversations
 
 app.use("/webhooks/hyperlocal", hyperlocalWebhookRoutes);

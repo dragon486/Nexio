@@ -1,565 +1,592 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    DollarSign, Users, Zap, CheckCircle, 
-    MessageSquare, ArrowUpRight, TrendingUp,
-    Shield, Activity, Globe, Info, Clock, 
-    BarChart2, Calendar, LayoutDashboard, Settings, LogOut,
-    Search, Filter, MoreHorizontal, Send, Sparkles, ArrowLeft, Sun, Moon,
-    Mail, Phone
+import { useNavigate } from 'react-router-dom';
+import {
+    LayoutDashboard, Users, GitBranch, Zap, BarChart2, Link2,
+    Bell, MessageSquare, Settings, Search,
+    ChevronRight, TrendingUp, TrendingDown, Info, Download,
+    Filter, Plus, Lock, Database, CheckCircle, ArrowUpRight,
+    Target, Calendar, Clock, Star
 } from 'lucide-react';
 
-const initialLeads = [
-    { id: 1, name: "Dynamic Retail", status: "converted", dealSize: "$18,400", aiScore: 98, industry: "SaaS & Cloud", time: "2m ago", email: "contact@alpha.com", source: "Email", message: "Reviewing our Q3 digital infrastructure roadmap. We require confirmation on NEXIO's technical throughput for 500k+ API calls/hour and its impact on our existing enterprise SLA." },
-    { id: 2, name: "Azure Estates", status: "qualified", dealSize: "$42,500", aiScore: 92, industry: "Luxury Real Estate", time: "8m ago", email: "portfolio@azure.io", source: "WhatsApp", message: "Expanding our luxury villa portfolio in the EMAAR district. Automating lead qualification is a priority—specifically filtering by private equity history and high-net-worth investor intent." },
-    { id: 3, name: "Nova Retail", status: "new", dealSize: "$12,200", aiScore: 84, industry: "E-commerce", time: "15m ago", email: "growth@nova.com", source: "Email", message: "Implementing omni-channel retention logic for abandoned carts exceeding $500. Can NEXIO personalize recovery flows based on previous SKU interactions and conversion history?" },
-    { id: 4, name: "BioGen Lab", status: "new", dealSize: "$25,000", aiScore: 78, industry: "Healthcare / BioTech", time: "24m ago", email: "security@biogen.systems", source: "Email", message: "Requesting a technical audit of NEXIO's patient data isolation protocols. Our compliance team needs to verify HIPAA / GDPR integrity for the upcoming platform sync." },
-    { id: 5, name: "Apex Insure", status: "contacted", dealSize: "$9,500", aiScore: 65, industry: "FinTech / Insurance", time: "42m ago", email: "ops@apex.insure", source: "WhatsApp", message: "Reviewing our risk-scoring automation for multi-jurisdictional policy underwriting. How does NEXIO's autonomous engine handle real-time compliance checks across 40+ countries?" }
-];
+// ── DESIGN TOKENS — always dark (dashboard is always dark) ────────────────────
+const T = {
+    bg: '#0a0a0a',
+    sidebar: '#0f1115',
+    card: '#1a1c23',
+    border: 'rgba(255,255,255,0.05)',
+    borderLight: 'rgba(255,255,255,0.08)',
+    text: '#f8fafc',
+    textSec: '#94a3b8',
+    textTer: 'rgba(255,255,255,0.25)',
+    blue: '#3b82f6',
+    green: '#10b981',
+    amber: '#f59e0b',
+    violet: '#8b5cf6',
+};
 
-const InteractiveHeroDemo = () => {
-    const [selectedLead, setSelectedLead] = useState(null);
-    const [activeTab, setActiveTab] = useState('dashboard');
-    const [theme, setTheme] = useState('dark');
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [intelligenceResult, setIntelligenceResult] = useState(null);
-    const [hasSent, setHasSent] = useState(false);
-    const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-
-    const handleSelectLead = (lead) => {
-        setSelectedLead(lead);
-        setIntelligenceResult(null);
-        setHasSent(false);
-    };
-
-    const handleSendNow = () => {
-        setHasSent(true);
-        setTimeout(() => {
-            const chatHistory = document.getElementById('chat-history-scroll');
-            if (chatHistory) chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
-        }, 100);
-    };
-
-    const handleGenerateIntelligence = () => {
-        setIsGenerating(true);
-        setIntelligenceResult(null);
-        setHasSent(false);
-        
-        const intelligenceProfiles = {
-            1: { reasoning: "Critical technical intent regarding Q3 infrastructure. Scalability confirmed as primary conversion catalyst. Enterprise-grade throughput requirements confirmed.", draft: "Dear Dynamic Retail Team,\n\nI am confirming that NEXIO's sync engine handles 1.2M+ records/hour with zero latency impact. I've attached our technical scope and enterprise SLA for your review.\n\nShall we schedule a brief technical sync to finalize the integration specs?" },
-            2: { reasoning: "High-net-worth portfolio inquiry. Investment history indicates Tier-1 resilience. Target high-intent luxury automation.", draft: "Hi! I've prepared a highly qualified portfolio of EMAAR villas for you focused on high-net-worth investor criteria. Want to review the brochure? 🏘️" },
-            3: { reasoning: "Retail retention logic triggered. Segment: High-value cart abandonment. SKU-level personalized re-engagement recommended for ROI protection.", draft: "Dear Nova Retail Team,\n\nConfirming that our personalization engine can automate recovery flows for your abandoned carts over $500. We can sync this with your Shopify Plus environment to protect your weekly ROI.\n\nShall we proceed with the integration?" },
-            4: { reasoning: "Critical compliance inquiry. HIPAA/GDPR isolation protocols verified via siloed LLM clusters. Move to technical audit stage for sign-off.", draft: "Dear BioGen Security Team,\n\nRegarding your patient data isolation inquiry, I am confirming that our siloed LLM clusters and E2E encryption ensure total data integrity for your HIPAA sync. Attached is our ISO 27001 / SOC 2 Type II security audit.\n\nAre you available for a brief briefing with our compliance officer tomorrow?" },
-            5: { reasoning: "Risk-scoring logic validation requested. Compliance module handles 40+ countries natively. Move to multi-jurisdictional pilot.", draft: "Hi there! We're all set for the risk-scoring pilot. Real-time compliance across the 40+ countries you mentioned is active. Shall we kick off the first test run? 🚀" }
-        };
-
-        const profile = intelligenceProfiles[selectedLead?.id] || intelligenceProfiles[1];
-        const channel = selectedLead.source.toLowerCase().includes('whatsapp') ? 'whatsapp' : 'email';
-
-        setTimeout(() => {
-            setIsGenerating(false);
-            setIntelligenceResult({
-                score: selectedLead.aiScore,
-                channel: channel,
-                subject: channel === 'email' ? `Technical Review: ${selectedLead.industry} Support` : null,
-                priority: selectedLead.aiScore > 80 ? 'High' : 'Medium',
-                reasoning: profile.reasoning,
-                generatedMessage: profile.draft
-            });
-            setTimeout(() => {
-                const chatHistory = document.getElementById('chat-history-scroll');
-                if (chatHistory) chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
-            }, 100);
-        }, 1500);
-    };
-
+// ── MICRO CHARTS ──────────────────────────────────────────────────────────────
+const Sparkline = ({ data = [], color = T.blue, h = 36, w = 64 }) => {
+    const max = Math.max(...data, 1);
+    const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * h}`).join(' ');
     return (
-        <div data-testid="interactive-demo" className={`relative w-full h-[600px] md:h-auto md:aspect-video rounded-[1.5rem] md:rounded-[2.5rem] border transition-all duration-700 ease-[0.28,0.11,0.32,1] overflow-hidden flex flex-col md:flex-row ${theme === 'dark' ? 'bg-black border-white/5 shadow-[0_0_100px_rgba(0,0,0,0.8)]' : 'bg-white border-black/5 shadow-[0_0_100px_rgba(0,0,0,0.05)]'}`}>
-            
-            {/* 🛠️ NAVIGATION SIDEBAR */}
-            <div className={`hidden md:flex w-[200px] border-r transition-all duration-700 flex-col pt-10 pb-6 z-50 ${theme === 'dark' ? 'bg-black border-white/5' : 'bg-[#fbfbfd] border-black/5'}`}>
-                <div className="px-8 mb-12 text-left">
-                    <div className={`text-[22px] font-bold tracking-[-0.04em] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>NEXIO</div>
-                </div>
+        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none" aria-hidden="true">
+            <polyline points={pts} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+};
 
-                <nav className="flex-1 px-4 space-y-1">
-                    {[
-                        { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
-                        { icon: Users, label: 'Leads Central', id: 'leads' }
-                    ].map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => { setActiveTab(item.id); handleSelectLead(null); }}
-                            className={`w-full flex items-center gap-3 px-5 py-3 rounded-2xl transition-all duration-300 ${
-                                activeTab === item.id 
-                                    ? (theme === 'dark' ? "bg-white/10 text-white" : "bg-black/5 text-black")
-                                    : (theme === 'dark' ? "text-white/20 hover:text-white/50" : "text-black/30 hover:text-black/60")
-                            }`}
-                        >
-                            <item.icon size={15} className={activeTab === item.id ? "opacity-100" : "opacity-40"} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-                            <span className="text-[12px] font-semibold tracking-tight">{item.label}</span>
+const GaugeArc = ({ value = 82, size = 140 }) => {
+    const r = (size - 20) / 2;
+    const cx = size / 2, cy = size / 2 + 18;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const arc = (a) => [cx + r * Math.cos(toRad(a)), cy + r * Math.sin(toRad(a))];
+    const lA = (s, e) => (e - s > 180 ? 1 : 0);
+    const sA = -200, eA = 20;
+    const fA = (value / 100) * (eA - sA) + sA;
+    const [sx, sy] = arc(sA), [ex, ey] = arc(eA), [fx, fy] = arc(fA);
+    return (
+        <svg width={size} height={size * 0.72} viewBox={`0 0 ${size} ${size * 0.72}`} aria-hidden="true">
+            <path d={`M${sx},${sy} A${r},${r} 0 ${lA(sA,eA)} 1 ${ex},${ey}`} stroke="rgba(255,255,255,0.06)" strokeWidth="9" strokeLinecap="round" fill="none" />
+            <path d={`M${sx},${sy} A${r},${r} 0 ${lA(sA,fA)} 1 ${fx},${fy}`} stroke={T.blue} strokeWidth="9" strokeLinecap="round" fill="none" />
+        </svg>
+    );
+};
+
+const MiniBar = ({ values = [], accent = T.blue }) => {
+    const max = Math.max(...values, 1);
+    const months = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+    return (
+        <div className="h-24 flex items-end gap-1" aria-hidden="true">
+            {values.map((v, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                    <div className="w-full rounded-sm" style={{ height: `${(v / max) * 80}%`, minHeight: '3px', background: i === 3 ? accent : 'rgba(255,255,255,0.07)' }} />
+                    <span className="text-[6px]" style={{ color: T.textTer }}>{months[i]}</span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const HeatGrid = () => {
+    const rows = [[2,1,2,1,3,2,1],[3,4,3,5,4,2,1],[2,3,4,4,3,5,3]];
+    const labels = ['12AM–8AM','8AM–4PM','4PM–12AM'];
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const col = (v) => `rgba(59,130,246,${[0.08,0.2,0.4,0.65,0.9][v-1]})`;
+    return (
+        <div aria-hidden="true">
+            <div className="flex gap-1 mb-1 pl-[52px]">
+                {days.map(d => <div key={d} className="flex-1 text-center" style={{ fontSize: '6px', color: T.textTer, fontWeight: 700 }}>{d}</div>)}
+            </div>
+            {rows.map((row, ri) => (
+                <div key={ri} className="flex gap-1 mb-1 items-center">
+                    <div className="w-12 text-right pr-1.5 shrink-0" style={{ fontSize: '6px', color: T.textTer, fontWeight: 700 }}>{labels[ri]}</div>
+                    {row.map((v, di) => <div key={di} className="flex-1 h-4 rounded-sm" style={{ background: col(v) }} />)}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const MiniDonut = ({ s = 80 }) => {
+    const r = s / 2 - 7;
+    const c = 2 * Math.PI * r;
+    return (
+        <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} aria-hidden="true">
+            <circle cx={s/2} cy={s/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9"/>
+            <circle cx={s/2} cy={s/2} r={r} fill="none" stroke={T.blue} strokeWidth="9"
+                strokeDasharray={`${c*.6} ${c*.4}`} strokeLinecap="round" transform={`rotate(-90 ${s/2} ${s/2})`}/>
+            <circle cx={s/2} cy={s/2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="9"
+                strokeDasharray={`${c*.4} ${c*.6}`} strokeLinecap="round" transform={`rotate(126 ${s/2} ${s/2})`}/>
+        </svg>
+    );
+};
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+const DashboardView = () => {
+    const [view, setView] = useState('overview');
+    const stats = [
+        { label: 'AI Generated Revenue', val: '₹24,064', trend: 12, spark: [4,5,6,5,7,8,9,10], color: T.blue },
+        { label: 'Pipeline Potential', val: '₹15,490', trend: 9, spark: [3,4,5,4,6,5,7,8], color: T.green },
+        { label: 'Leads Qualified', val: '2,355', trend: 7, spark: [6,5,7,6,8,9,8,10], color: T.violet },
+        { label: 'Conversion Rate', val: '12.5%', trend: 2, spark: [4,3,5,4,6,5,7,8], color: T.amber },
+    ];
+    return (
+        <div className="space-y-3">
+            {/* Demo banner */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-medium" style={{ background: 'rgba(59,130,246,0.07)', border: `1px solid rgba(59,130,246,0.2)` }}>
+                <Database size={12} className="shrink-0" style={{ color: T.blue }} />
+                <span style={{ color: '#93c5fd' }}>Demo Mode — projected data. Connect your account to see live numbers.</span>
+            </div>
+
+            {/* Tab row */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-0.5 p-1 rounded-xl" style={{ background: '#12131a' }}>
+                    {['overview','sales','leads'].map(t => (
+                        <button key={t} onClick={() => setView(t)} className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+                            style={view===t ? { background: 'rgba(255,255,255,0.08)', color: T.text } : { color: T.textTer }}>
+                            {t}
                         </button>
                     ))}
-                </nav>
-
-                <div className="px-6 pt-6 border-t border-white/5 opacity-40">
-                    <div className={`w-full flex items-center gap-3 px-4 py-3 text-[11px] font-semibold tracking-tight ${theme === 'dark' ? 'text-white/30' : 'text-black/30'}`}>
-                        <LogOut size={14} />
-                        <span>Logout</span>
-                    </div>
+                    <div className="w-px h-3 mx-1" style={{ background: T.border }} />
+                    <button className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-widest" style={{ color: T.blue }}>
+                        <Plus size={9} /> Add Widget
+                    </button>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5">
+                    {[{ icon: Filter, label: 'Filter' }, { icon: Download, label: 'Export' }].map(({ icon: I, label }) => (
+                        <button key={label} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-bold" style={{ border: `1px solid ${T.borderLight}`, color: T.textSec }}>
+                            <I size={9} />{label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* 📊 MAIN CONTENT GRID */}
-            <div className="flex-1 flex flex-col relative overflow-hidden min-h-[600px]">
-                
-                {/* 🖥️ Chrome UI (Minimalist Safari) */}
-                <div className={`h-14 border-b flex items-center px-4 md:px-10 justify-between z-40 relative transition-all duration-700 ${theme === 'dark' ? 'bg-black/60 border-white/5 backdrop-blur-[30px]' : 'bg-white/60 border-black/5 backdrop-blur-[30px]'}`}>
-                    <div className="flex gap-2">
-                        <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-                        <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                        <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+            {/* 4 Stat Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                {stats.map((s, i) => (
+                    <div key={i} className="rounded-2xl p-4 flex flex-col" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                        <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1 mb-1.5" style={{ color: T.textSec, fontSize: '9px', fontWeight: 600 }}>
+                                    {s.label} <Info size={8} style={{ opacity: 0.4 }} />
+                                </div>
+                                <div className="text-base font-bold" style={{ color: T.text }}>{s.val}</div>
+                                <div className="flex items-center gap-1 mt-0.5" style={{ fontSize: '8px', color: T.textSec }}>
+                                    vs last month
+                                    <span className="flex items-center gap-0.5 font-bold" style={{ color: s.trend >= 0 ? T.green : '#ef4444' }}>
+                                        {s.trend >= 0 ? <TrendingUp size={8}/> : <TrendingDown size={8}/>}
+                                        {s.trend >= 0 ? '+' : ''}{s.trend}%
+                                    </span>
+                                </div>
+                            </div>
+                            <Sparkline data={s.spark} color={s.color} w={50} h={30} />
+                        </div>
+                        <div className="pt-2 flex items-center gap-1" style={{ borderTop: `1px solid ${T.border}`, fontSize: '9px', color: T.textSec, fontWeight: 600 }}>
+                            See Details <ChevronRight size={9} />
+                        </div>
                     </div>
-                    <div className={`px-10 py-1.5 rounded-xl border text-[10px] font-semibold tracking-tight transition-all duration-700 ${theme === 'dark' ? 'bg-white/[0.03] border-white/10 text-white/40' : 'bg-black/[0.03] border-black/5 text-black/40'}`}>
-                        app.nexio.ai/{selectedLead ? 'leads/' + selectedLead.id : activeTab}
+                ))}
+            </div>
+
+            {/* Row 2: Gauge + Bar Chart */}
+            <div className="grid grid-cols-5 gap-2">
+                <div className="col-span-2 rounded-2xl p-4" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                    <div className="flex items-center gap-1 mb-2" style={{ fontSize: '10px', fontWeight: 600, color: T.textSec }}>Sales Performance <Info size={10} style={{ opacity: 0.3 }} /></div>
+                    <div className="flex flex-col items-center">
+                        <div className="relative">
+                            <GaugeArc value={82} size={120} />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center mt-3">
+                                <span className="text-2xl font-black" style={{ color: T.text }}>82</span>
+                                <span style={{ fontSize: '8px', color: T.textSec }}>of 100 pts</span>
+                            </div>
+                        </div>
+                        <div className="w-full mt-1.5 p-2.5 rounded-xl" style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                            <p className="font-bold" style={{ fontSize: '10px', color: T.text }}>Your team is great! ✨</p>
+                            <p style={{ fontSize: '8px', color: T.textSec }}>AI Agent is meeting or exceeding targets in several areas.</p>
+                        </div>
+                        <button className="mt-1.5 flex items-center gap-1" style={{ fontSize: '9px', color: T.blue, fontWeight: 600 }}>
+                            Improve Your Score <ChevronRight size={9} />
+                        </button>
                     </div>
-                    <button onClick={toggleTheme} className={`p-2.5 rounded-full transition-all ${theme === 'dark' ? 'hover:bg-white/10 text-yellow-400' : 'hover:bg-black/5 text-zinc-600'}`}>
-                        {theme === 'dark' ? <Sun size={15} strokeWidth={2.5} /> : <Moon size={15} strokeWidth={2.5} />}
-                    </button>
                 </div>
-
-                {/* DASHBOARD VIEW */}
-                {!selectedLead && activeTab === 'dashboard' && (
-                    <div className="p-8 h-full overflow-y-auto no-scrollbar pb-32 animate-in fade-in duration-500">
-                        <div className="mb-6">
-                            <div className={`backdrop-blur-3xl border rounded-2xl p-4 flex items-center justify-between gap-4 shadow-xl text-left transition-colors duration-500 ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-200'}`}>
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors duration-500 ${theme === 'dark' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : 'bg-blue-100 border-blue-200 text-blue-600'}`}>
-                                        <Info size={18} />
-                                    </div>
-                                    <div>
-                                        <div className={`text-xs font-black flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-                                            AI Strategic Insight
-                                            <span className="px-2 py-0.5 bg-blue-500 text-white text-[7px] font-black uppercase rounded-full">Demo Data</span>
-                                        </div>
-                                        <p className="text-[9px] text-zinc-500 mt-1 max-w-lg font-medium italic">"AI converted 12 high-value leads this week worth $18,400"</p>
-                                    </div>
-                                </div>
-                            </div>
+                <div className="col-span-3 rounded-2xl p-4" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5" style={{ fontSize: '10px', fontWeight: 600, color: T.textSec }}>Analytics <Info size={10} style={{ opacity: 0.3 }} /></div>
+                        <div className="flex items-center gap-1">
+                            <button className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ border: `1px solid ${T.borderLight}`, fontSize: '8px', color: T.textTer }}><Filter size={8}/>Filter</button>
+                            <button className="px-2 py-1 rounded-lg" style={{ border: `1px solid ${T.borderLight}`, fontSize: '8px', color: T.textTer }}>Last Year ▾</button>
                         </div>
+                    </div>
+                    <MiniBar values={[45,62,38,95,55,70,48,52,44,38,30,28]} />
+                </div>
+            </div>
 
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-10">
-                            {[
-                                { label: "AI Revenue", val: "$18,400", sub: "Monthly Closed", color: "text-emerald-500" },
-                                { label: "Win Rate", val: "12.5%", sub: "Automated Ops", color: "" },
-                                { label: "Annual Run Rate", val: "$220k", sub: "12mo Target", color: "" },
-                                { label: "Pipeline", val: "$642k", sub: "Active Intent", color: "" }
-                            ].map((card, i) => (
-                                <div key={i} className={`p-6 border rounded-[2rem] text-left transition-all duration-700 ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-white border-black/[0.03] shadow-sm'}`}>
-                                    <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-tight mb-4">{card.label}</div>
-                                    <div className={`text-3xl font-bold tracking-tight mb-2 ${card.color || (theme === 'dark' ? 'text-white' : 'text-black')}`}>{card.val}</div>
-                                    <div className="text-[9px] font-semibold text-text-tertiary uppercase">{card.sub}</div>
-                                </div>
+            {/* Row 3: Heatmap + Donut */}
+            <div className="grid grid-cols-5 gap-2">
+                <div className="col-span-3 rounded-2xl p-4" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <span style={{ fontSize: '10px', fontWeight: 600, color: T.textSec }}>Visit by Time</span>
+                        <div className="flex items-center gap-1">
+                            <span style={{ fontSize: '7px', color: T.textTer }}>0</span>
+                            {['rgba(59,130,246,0.12)','rgba(59,130,246,0.3)','rgba(59,130,246,0.55)','rgba(59,130,246,0.85)'].map((c,i)=>(
+                                <div key={i} className="w-2.5 h-1.5 rounded-sm" style={{ background: c }} />
                             ))}
+                            <span style={{ fontSize: '7px', color: T.textTer }}>10k+</span>
                         </div>
-
-                        {/* NEW: ROI COMPARISON SECTION */}
-                        <div className="mb-8 text-left">
-                            <div className={`text-[9px] font-black uppercase tracking-[0.3em] mb-4 ${theme === 'dark' ? 'text-blue-500/60' : 'text-blue-500'}`}>AI vs Manual Performance</div>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <div className={`p-6 border rounded-[2rem] transition-colors duration-500 ${theme === 'dark' ? 'bg-white/[0.01] border-white/5' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                                    <div className="flex justify-between items-end mb-6">
-                                        <div>
-                                            <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Conversion Win Rate</div>
-                                            <div className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>AI performs 2.5x better</div>
-                                        </div>
-                                        <TrendingUp className="text-emerald-500" size={24} />
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div className="relative pt-1">
-                                            <div className="flex mb-2 items-center justify-between">
-                                                <div className="text-[8px] font-black uppercase rounded-full text-blue-500 bg-blue-500/10 px-2 py-0.5">AI Win Rate</div>
-                                                <span className="text-[10px] font-black text-blue-500">18%</span>
-                                            </div>
-                                            <div className={`overflow-hidden h-1.5 flex rounded-full ${theme === 'dark' ? 'bg-white/5' : 'bg-zinc-100'}`}>
-                                                <div style={{ width: '18%' }} className="bg-blue-500 rounded-full" />
-                                            </div>
-                                        </div>
-                                        <div className="relative pt-1">
-                                            <div className="flex mb-2 items-center justify-between">
-                                                <div className="text-[8px] font-black uppercase rounded-full text-zinc-500 bg-zinc-500/10 px-2 py-0.5">Manual Win Rate</div>
-                                                <span className="text-[10px] font-black text-zinc-500">7%</span>
-                                            </div>
-                                            <div className={`overflow-hidden h-1.5 flex rounded-full ${theme === 'dark' ? 'bg-white/5' : 'bg-zinc-100'}`}>
-                                                <div style={{ width: '7%' }} className="bg-zinc-500 rounded-full" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={`p-6 border rounded-[2rem] transition-colors duration-500 ${theme === 'dark' ? 'bg-white/[0.01] border-white/5' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                                    <div className="flex justify-between items-end mb-6">
-                                        <div>
-                                            <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Response Speed Advantage</div>
-                                            <div className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Continuous 24/7 Coverage</div>
-                                        </div>
-                                        <Clock className="text-blue-500" size={24} />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className={`p-4 rounded-2xl border transition-colors ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/10 text-blue-500' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
-                                            <div className="text-[8px] uppercase tracking-wider font-black mb-1">Avg AI Response</div>
-                                            <div className="text-2xl font-black">3s</div>
-                                        </div>
-                                        <div className={`p-4 rounded-2xl border transition-colors ${theme === 'dark' ? 'bg-zinc-500/5 border-zinc-500/10 text-zinc-500' : 'bg-zinc-50 border-zinc-100 text-zinc-600'}`}>
-                                            <div className="text-[8px] uppercase tracking-wider font-black mb-1">Manual Avg</div>
-                                            <div className="text-2xl font-black">2h 15m</div>
-                                        </div>
-                                    </div>
-                                </div>
+                    </div>
+                    <HeatGrid />
+                </div>
+                <div className="col-span-2 rounded-2xl p-4" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                    <div className="flex items-center gap-1 mb-2" style={{ fontSize: '10px', fontWeight: 600, color: T.textSec }}>Total Visits <Info size={10} style={{ opacity: 0.2 }}/></div>
+                    <div className="flex items-start justify-between gap-1">
+                        <div>
+                            <div className="text-xl font-bold" style={{ color: T.text }}>191,886</div>
+                            <div className="flex items-center gap-1 mt-0.5" style={{ fontSize: '8px', color: T.textSec }}>
+                                vs last month <span className="flex items-center gap-0.5 font-bold" style={{ color: T.green }}><TrendingUp size={8}/>+8.5%</span>
                             </div>
-                        </div>
-
-                        {/* NEW: USER GROWTH & DATABASE SECTION */}
-                        <div className="mb-8 text-left">
-                            <div className={`text-[9px] font-black uppercase tracking-[0.3em] mb-4 ${theme === 'dark' ? 'text-blue-500/60' : 'text-blue-500'}`}>User Growth & Database</div>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                {[
-                                    { label: "Total Leads", val: "12,400", sub: "Database size", icon: Users, color: "text-blue-500" },
-                                    { label: "Hot Leads Today", val: "18", sub: "Priority 1 depth", icon: Calendar, color: "text-emerald-500" },
-                                    { label: "Auto Replies Sent", val: "142", sub: "1.1% coverage", icon: Zap, color: "text-blue-500" },
-                                    { label: "Hours Reclaimed", val: "23h", sub: "Manual reduction", icon: Shield, color: "text-indigo-500" }
-                                ].map((stat, i) => (
-                                    <div key={i} className={`p-4 border rounded-2xl transition-colors duration-500 ${theme === 'dark' ? 'bg-white/[0.01] border-white/5' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{stat.label}</div>
-                                            <stat.icon size={12} className={stat.color} />
-                                        </div>
-                                        <div className={`text-xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>{stat.val}</div>
-                                        <div className="text-[7px] font-bold text-zinc-600 uppercase tracking-widest">{stat.sub}</div>
+                            <div className="mt-2 space-y-1.5">
+                                {[{l:'Mobile',v:'115,132',c:T.blue},{l:'Website',v:'76,754',c:'rgba(255,255,255,0.15)'}].map(s=>(
+                                    <div key={s.l} className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: s.c }}/>
+                                        <span className="flex-1" style={{ fontSize: '9px', color: T.textSec }}>{s.l}</span>
+                                        <span className="font-semibold" style={{ fontSize: '9px', color: T.textSec }}>{s.v}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
-
-                        {/* NEW: REVENUE HISTORY CHART SECTION */}
-                        <div className="text-left">
-                            <div className={`text-[9px] font-black uppercase tracking-[0.3em] mb-4 ${theme === 'dark' ? 'text-blue-500/60' : 'text-blue-500'}`}>Revenue History (Dynamics)</div>
-                            <div className={`p-6 border rounded-[2rem] transition-colors duration-500 ${theme === 'dark' ? 'bg-white/[0.01] border-white/5' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                                <div className="h-24 flex items-end gap-3 px-4">
-                                    {[45, 62, 38, 78, 55, 88, 95].map((val, i) => (
-                                        <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                                            <motion.div 
-                                                initial={{ height: 0 }}
-                                                animate={{ height: `${val}%` }}
-                                                className={`w-full rounded-t-lg transition-all duration-300 ${i === 6 ? 'bg-blue-500' : 'bg-blue-500/20 group-hover:bg-blue-500/40'}`} 
-                                            />
-                                            <div className="text-[7px] font-black text-zinc-600">
-                                                {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'][i]}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                        <div className="relative shrink-0">
+                            <MiniDonut s={76} />
+                            <div className="absolute top-0 right-0" style={{ fontSize: '7px', color: T.textTer }}>60%</div>
                         </div>
                     </div>
-                )}
+                </div>
+            </div>
+        </div>
+    );
+};
 
-                {/* LEADS CENTRAL VIEW */}
-                {!selectedLead && activeTab === 'leads' && (
-                    <div className="p-4 md:p-8 h-full w-full overflow-y-auto no-scrollbar pb-32 animate-in fade-in duration-700 text-left">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6 md:gap-0">
+const LeadsView = () => {
+    const [selected, setSelected] = useState(null);
+    const leads = [
+        { name: 'Elite Fitness Pro', status: 'qualified', score: 95, deal: '₹4,200', industry: 'Health & Wellness', time: '2m ago' },
+        { name: 'Azure Estates', status: 'converted', score: 92, deal: '₹42,500', industry: 'Real Estate', time: '8m ago' },
+        { name: 'Nova Retail', status: 'new', score: 84, deal: '₹12,200', industry: 'E-commerce', time: '15m ago' },
+        { name: 'BioGen Lab', status: 'contacted', score: 78, deal: '₹25,000', industry: 'Healthcare', time: '31m ago' },
+        { name: 'TechFlow Inc.', status: 'qualified', score: 94, deal: '₹18,400', industry: 'SaaS', time: '1h ago' },
+    ];
+    const sc = { new: T.blue, qualified: T.green, contacted: T.amber, converted: T.violet };
+    const sb = { new: 'rgba(59,130,246,0.1)', qualified: 'rgba(16,185,129,0.1)', contacted: 'rgba(245,158,11,0.1)', converted: 'rgba(139,92,246,0.1)' };
+    return (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <div>
+                    <p style={{ fontSize:'8px', fontWeight:900, letterSpacing:'0.3em', color: T.blue }}>PORTFOLIO MANAGEMENT</p>
+                    <h2 className="font-black italic uppercase tracking-tighter text-base" style={{ color: T.text }}>Leads Central</h2>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl" style={{ border: `1px solid ${T.borderLight}`, fontSize:'9px', color: T.textSec }}><Filter size={9}/> Filter</button>
+                    <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-white" style={{ background: T.blue, fontSize:'9px' }}><Plus size={9}/> Add Lead</button>
+                </div>
+            </div>
+            <div className="rounded-2xl overflow-hidden" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                <div className="grid grid-cols-4 px-4 py-2.5" style={{ borderBottom: `1px solid ${T.border}` }}>
+                    {['Identity','Status','AI Score','Value'].map(h => <span key={h} style={{ fontSize:'8px', fontWeight:900, letterSpacing:'0.2em', color: T.textTer }}>{h}</span>)}
+                </div>
+                {leads.map((lead, i) => (
+                    <div key={i} onClick={() => setSelected(selected?.name === lead.name ? null : lead)}
+                        className="grid grid-cols-4 px-4 py-2.5 cursor-pointer transition-all"
+                        style={{ borderBottom: `1px solid ${T.border}`, background: selected?.name === lead.name ? 'rgba(59,130,246,0.05)' : 'transparent' }}>
+                        <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-xl flex items-center justify-center text-white shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', fontSize: '10px', fontWeight:900 }}>{lead.name[0]}</div>
                             <div>
-                                <div className="text-[9px] font-black tracking-[0.3em] text-blue-500 uppercase mb-2">Portfolio Management</div>
-                                <h1 className={`text-2xl md:text-4xl font-black tracking-tighter italic uppercase mb-1 ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>Leads Central</h1>
-                                <p className="text-zinc-500 text-[9px] font-medium max-w-[200px] md:max-w-sm">Proprietary AI scoring and autonomous conversion tracking.</p>
-                            </div>
-
-                            <div className={`flex items-center gap-3 backdrop-blur-md p-1.5 rounded-xl border shadow-2xl transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-900/60 border-white/10' : 'bg-white/80 border-zinc-200'}`}>
-                                <div className="relative">
-                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600" size={12} />
-                                    <input type="text" placeholder="Identify lead..." className={`pl-8 pr-4 py-1.5 border rounded-lg text-[9px] w-32 md:w-40 focus:outline-none transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-950 border-white/5 text-white' : 'bg-zinc-50 border-zinc-200 text-zinc-900'}`} />
-                                </div>
-                                <div className={`h-4 w-[1px] ${theme === 'dark' ? 'bg-white/10' : 'bg-zinc-200'}`} />
-                                <div className="flex items-center gap-2 text-[9px] font-black text-zinc-400 px-2 cursor-pointer transition-colors hover:text-white">
-                                    <Filter size={10} /> STATUS: ALL
-                                </div>
-                                <div className="px-2 py-1.5 bg-primary/10 text-primary rounded-md"><MoreHorizontal size={14} /></div>
+                                <p style={{ fontSize:'11px', fontWeight:900, color: T.text, letterSpacing:'-0.02em' }}>{lead.name}</p>
+                                <p style={{ fontSize:'8px', color: T.textTer }}>{lead.industry}</p>
                             </div>
                         </div>
-
-                        <div className={`border rounded-[24px] overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-white/[0.02] border-white/10' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                            <div className="w-full overflow-x-auto">
-                                <table className="w-full text-left min-w-[500px]">
-                                    <thead>
-                                        <tr className={`border-b transition-colors duration-500 ${theme === 'dark' ? 'border-white/10 bg-white/[0.01]' : 'border-zinc-100 bg-zinc-50/50'}`}>
-                                            <th className="p-5 text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Asset / Identity</th>
-                                            <th className="p-5 text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Workflow Status</th>
-                                            <th className="p-5 text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Conversion Potential</th>
-                                            <th className="p-5 text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">Projected Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {initialLeads.map((lead, i) => (
-                                            <tr key={i} onClick={() => handleSelectLead(lead)} className={`transition-all cursor-pointer group border-l-2 border-transparent hover:border-primary ${theme === 'dark' ? 'hover:bg-white/[0.03]' : 'hover:bg-zinc-50'}`}>
-                                                <td className="p-5">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center font-black text-white shadow-lg">{lead.name.charAt(0)}</div>
-                                                        <div>
-                                                            <div className={`font-black text-xs md:text-sm tracking-tight uppercase ${theme === 'dark' ? 'text-white' : 'text-zinc-900 shadow-sm'}`}>{lead.name}</div>
-                                                            <div className="text-[9px] text-zinc-600 font-medium italic lowercase">{lead.industry}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-5">
-                                                    <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border border-white/5 ${lead.status === 'converted' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400'}`}>{lead.status}</span>
-                                                </td>
-                                                <td className="p-5">
-                                                    <div className="flex flex-col gap-2">
-                                                        <div className="flex items-center justify-between gap-4 w-32">
-                                                            <span className="text-[8px] font-black uppercase tracking-tighter text-emerald-400">High Potential</span>
-                                                            <span className={`text-[10px] font-black ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>{lead.aiScore}%</span>
-                                                        </div>
-                                                        <div className={`w-32 h-1 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-white/5' : 'bg-zinc-100'}`}>
-                                                            <motion.div animate={{ width: `${lead.aiScore}%` }} className="h-full bg-emerald-500 rounded-full" />
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-5"><div className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>{lead.dealSize}</div></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                        <div className="flex items-center">
+                            <span className="px-2 py-0.5 rounded-full" style={{ background: sb[lead.status], color: sc[lead.status], fontSize:'8px', fontWeight:900 }}>{lead.status}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                                <div className="h-full rounded-full" style={{ width:`${lead.score}%`, background: T.blue }}/>
                             </div>
+                            <span style={{ fontSize:'10px', fontWeight:700, color: T.textSec }}>{lead.score}</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span style={{ fontSize:'12px', fontWeight:700, color: T.text }}>{lead.deal}</span>
                         </div>
                     </div>
-                )}
+                ))}
+            </div>
+            {selected && (
+                <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                    className="p-3 rounded-2xl" style={{ background:'rgba(59,130,246,0.05)', border:`1px solid rgba(59,130,246,0.2)` }}>
+                    <div className="flex justify-between mb-2">
+                        <span style={{ fontSize:'9px', fontWeight:900, letterSpacing:'0.2em', color: T.blue }}>AI INTELLIGENCE — {selected.name.toUpperCase()}</span>
+                        <button onClick={() => setSelected(null)} style={{ color: T.textSec, fontSize:'11px' }}>✕</button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                        {[{l:'AI Score',v:`${selected.score}/100`,c:T.blue},{l:'Status',v:selected.status,c:T.text},{l:'Deal Value',v:selected.deal,c:T.green}].map(s=>(
+                            <div key={s.l} className="p-2.5 rounded-xl" style={{ background:'rgba(255,255,255,0.04)' }}>
+                                <p style={{ fontSize:'7px', fontWeight:900, letterSpacing:'0.2em', color: T.textTer, marginBottom:'4px' }}>{s.l}</p>
+                                <p style={{ fontSize:'14px', fontWeight:900, color: s.c }}>{s.v}</p>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
+        </div>
+    );
+};
 
-                {/* 💬 LEAD DETAIL CHAT VIEW (1:1 SYNC) */}
-                {selectedLead && (
-                    <div className="flex-1 flex flex-col h-full bg-transparent overflow-hidden animate-in slide-in-from-bottom-10 duration-700">
-                        {/* Chat Header */}
-                        <div className={`p-6 border-b flex items-center justify-between transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-900/40 border-white/10' : 'bg-white border-zinc-200'}`}>
-                            <div className="flex items-center gap-6">
-                                <button onClick={() => handleSelectLead(null)} className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all hover:-translate-x-1 ${theme === 'dark' ? 'bg-zinc-800 border-white/10 text-white' : 'bg-zinc-100 border-zinc-200 text-zinc-900'}`}>
-                                    <ArrowLeft size={16} />
-                                </button>
-                                <div className="text-left">
-                                    <h2 className={`text-2xl font-black uppercase italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>{selectedLead.name}</h2>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="text-[8px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1.5 bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                                            <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" /> AI Agent Active
-                                        </div>
-                                        <div className={`text-[8px] font-black uppercase tracking-widest opacity-40 flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-full border border-white/10 ${theme === 'dark' ? 'text-white' : 'text-zinc-500'}`}>
-                                            Source: {selectedLead.source} Sync
-                                        </div>
+const PipelineView = () => {
+    const stages = [
+        { label: 'Discovery', count: 18, value: '₹82k', color: T.blue, cards: [{ name:'TechFlow Inc', deal:'₹18.4k', score:94 }, { name:'Nova Retail', deal:'₹12.2k', score:84 }] },
+        { label: 'Qualified', count: 12, value: '₹143k', color: T.green, cards: [{ name:'Azure Estates', deal:'₹42.5k', score:92 }, { name:'Elite Fitness', deal:'₹4.2k', score:95 }], locked: false },
+        { label: 'Proposal', count: 7, value: '₹290k', color: T.amber, cards: [{ name:'BioGen Lab', deal:'₹25k', score:78 }], locked: true },
+        { label: 'Closed Won', count: 4, value: '₹512k', color: T.green, cards: [], locked: true },
+    ];
+    return (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <div>
+                    <p style={{ fontSize:'8px', fontWeight:900, letterSpacing:'0.3em', color: T.violet }}>PIPELINE</p>
+                    <h2 className="font-black italic uppercase tracking-tighter text-base" style={{ color: T.text }}>Deal Pipeline</h2>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-white flex items-center gap-1" style={{ background: T.violet, fontSize:'8px', fontWeight:900 }}>
+                    <Star size={9} fill="currentColor" /> AI Pipeline
+                </span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 h-64">
+                {stages.map((stage, si) => (
+                    <div key={si} className="rounded-2xl p-3 flex flex-col relative overflow-hidden" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                        {stage.locked && (
+                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl backdrop-blur-sm" style={{ background: 'rgba(10,10,10,0.75)' }}>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.borderLight}` }}>
+                                    <Lock size={18} style={{ color: T.textSec }} />
+                                </div>
+                                <p style={{ fontSize:'9px', fontWeight:900, color: T.textSec, textAlign:'center' }}>Upgrade to unlock</p>
+                                <button className="mt-2 px-3 py-1 rounded-full text-white" style={{ background: T.blue, fontSize:'8px', fontWeight:900 }}>Upgrade →</button>
+                            </div>
+                        )}
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full" style={{ background: stage.color }} />
+                                <span style={{ fontSize:'9px', fontWeight:900, color: T.text }}>{stage.label}</span>
+                            </div>
+                            <span className="w-5 h-5 rounded-lg flex items-center justify-center text-white" style={{ background: 'rgba(255,255,255,0.07)', fontSize:'9px', fontWeight:900 }}>{stage.count}</span>
+                        </div>
+                        <div className="mb-2" style={{ fontSize:'11px', fontWeight:900, color: stage.color }}>{stage.value}</div>
+                        <div className="flex-1 space-y-1.5 overflow-hidden">
+                            {stage.cards.map((c, ci) => (
+                                <div key={ci} className="p-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.border}` }}>
+                                    <p style={{ fontSize:'10px', fontWeight:900, color: T.text }}>{c.name}</p>
+                                    <div className="flex justify-between mt-0.5">
+                                        <span style={{ fontSize:'8px', color: T.textSec }}>{c.deal}</span>
+                                        <span style={{ fontSize:'8px', color: T.blue }}>{c.score}/100</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <button 
-                                    onClick={handleGenerateIntelligence}
-                                    disabled={isGenerating}
-                                    className={`px-6 h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 border-none ${isGenerating ? 'bg-blue-500/20 text-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 rounded-2xl shadow-xl shadow-blue-500/20'}`}
-                                >
-                                    {isGenerating ? <><Sparkles className="animate-spin" size={14} /> Analyzing...</> : <><Sparkles size={14} /> Sync Intelligence</>}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Chat History */}
-                        <div id="chat-history-scroll" className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 custom-scrollbar flex flex-col">
-                            <div className="flex-1 min-h-[50px]" /> {/* Spacer */}
-                            <div className="space-y-10">
-                                {/* Lead Initial Message */}
-                                <div className="flex justify-start">
-                                    <div className={`max-w-[70%] p-6 rounded-[28px] rounded-tl-none border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-900/60 border-white/10 backdrop-blur-md' : 'bg-white border-zinc-200'}`}>
-                                        <div className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-3">{selectedLead.name} • Internal Lead</div>
-                                        <p className={`text-base font-medium leading-relaxed text-left ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}>
-                                            "{selectedLead.message}"
-                                        </p>
-                                        <div className="text-[8px] font-black text-zinc-600 mt-4 uppercase tracking-[0.2em]">Source: {selectedLead.source} Sync</div>
-                                    </div>
-                                </div>
-
-                                {/* AI Intelligence Insight (Generated) */}
-                                <AnimatePresence>
-                                    {intelligenceResult && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="flex justify-center"
-                                        >
-                                            <div className="bg-blue-500/5 border border-blue-500/20 backdrop-blur-2xl rounded-[32px] p-6 max-w-xl shadow-[0_0_50px_rgba(59,130,246,0.1)] flex gap-6 items-center text-left">
-                                                <div className="w-14 h-14 rounded-2xl bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)] flex items-center justify-center text-white shrink-0"><Sparkles size={24} /></div>
-                                                <div>
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <h3 className="text-[10px] font-black uppercase text-blue-500 tracking-[0.3em]">AI Analysis</h3>
-                                                        <div className="px-2 py-0.5 bg-blue-500 text-white text-[7px] font-black uppercase rounded tracking-widest">Score: {intelligenceResult.score}</div>
-                                                    </div>
-                                                    <p className={`text-[11px] font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-600'}`}>{intelligenceResult.reasoning}</p>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                {/* AI Response Bubble (Only if not generating or is static history) */}
-                                {!intelligenceResult && (
-                                    <div className="flex justify-end pr-4">
-                                        <div className="max-w-[75%] p-8 rounded-[38px] rounded-tr-none bg-primary shadow-[0_30px_60px_-15px_rgba(59,130,246,0.4)] text-left relative group">
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white"><Sparkles size={14} /></div>
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Autonomous AI Agent</span>
-                                            </div>
-                                            <p className="text-base font-black text-white leading-relaxed">
-                                                Hi! Thanks for reaching out to us. I've just received your inquiry and I'm currently preparing a detailed response for you. I'll have that over in just a moment! ⚡
-                                            </p>
-                                            <div className="text-[8px] font-black text-white/50 mt-6 uppercase tracking-widest flex items-center justify-between">
-                                                <span>Transmitted via {selectedLead.source}</span>
-                                                <span className="px-2 py-1 bg-white/10 rounded flex items-center gap-1.5 block">
-                                                    <div className="w-1 h-1 rounded-full bg-emerald-400" />
-                                                    Active Analysis
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* GENERATED MESSAGE (Appears below Intelligence Card) */}
-                                <AnimatePresence>
-                                    {intelligenceResult?.generatedMessage && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="space-y-6"
-                                        >
-                                            {/* Draft Card (Channel Aware) */}
-                                            <div className={`border rounded-[32px] p-6 shadow-2xl transition-all flex flex-col gap-6 ${theme === 'dark' ? 'border-white/10 bg-zinc-950/40 backdrop-blur-3xl' : 'border-zinc-200 bg-white/80'}`}>
-                                                <div className="flex items-center justify-between">
-                                                    <div className={`text-[10px] uppercase tracking-[0.2em] font-black flex items-center gap-2 italic ${intelligenceResult.channel === 'email' ? 'text-blue-500' : 'text-emerald-500'}`}>
-                                                        {intelligenceResult.channel === 'email' ? <Mail size={12} /> : <MessageSquare size={12} />} 
-                                                        {hasSent ? (intelligenceResult.channel === 'email' ? 'Email Dispatched' : 'WhatsApp Sent') : (intelligenceResult.channel === 'email' ? 'Intelligence Draft (Mail)' : 'Intelligence Draft (WhatsApp)')}
-                                                    </div>
-                                                    {hasSent && <span className="bg-emerald-500/10 text-emerald-500 text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest border border-emerald-500/20 ">Auto-Dispatched</span>}
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    {intelligenceResult.channel === 'email' && intelligenceResult.subject && (
-                                                        <div className={`p-4 rounded-xl border-l-4 border-blue-500 transition-colors ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-zinc-50 border-zinc-100'}`}>
-                                                            <div className="text-[8px] font-black uppercase text-zinc-500 mb-1">Subject:</div>
-                                                            <div className={`text-xs font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>{intelligenceResult.subject}</div>
-                                                        </div>
-                                                    )}
-                                                    <p className={`text-sm md:text-base leading-relaxed font-medium whitespace-pre-wrap ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-700'} ${intelligenceResult.channel === 'whatsapp' ? 'italic' : ''}`}>
-                                                        {intelligenceResult.generatedMessage}
-                                                    </p>
-                                                </div>
-
-                                                {!hasSent && (
-                                                    <div className="flex gap-4">
-                                                        <button 
-                                                            onClick={handleSendNow}
-                                                            className={`font-black uppercase tracking-widest text-[10px] px-8 h-12 rounded-2xl shadow-xl border-none active:scale-95 transition-all text-center text-white ${intelligenceResult.channel === 'email' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'}`}
-                                                        >
-                                                            {intelligenceResult.channel === 'email' ? 'SEND EMAIL NOW' : 'SEND WHATSAPP'}
-                                                        </button>
-                                                        <button className={`font-black uppercase tracking-widest text-[10px] px-8 h-12 rounded-2xl border transition-all ${theme === 'dark' ? 'border-white/10 text-zinc-500 hover:text-white' : 'border-zinc-200 text-zinc-400 hover:text-zinc-600'}`}>
-                                                            Edit Draft
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Final Sent Bubble (Only if sent) */}
-                                            {hasSent && (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, x: 20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    className="flex justify-end pr-4"
-                                                >
-                                                    <div className={`max-w-[75%] p-8 rounded-[38px] rounded-tr-none shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] text-left relative ${intelligenceResult.channel === 'email' ? 'bg-blue-600' : 'bg-emerald-600 shadow-emerald-500/20'}`}>
-                                                        <div className="flex items-center gap-3 mb-4">
-                                                            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white">
-                                                                {intelligenceResult.channel === 'email' ? <Mail size={14} /> : <MessageSquare size={14} />}
-                                                            </div>
-                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Autonomous AI Dispatch ({intelligenceResult.channel})</span>
-                                                        </div>
-                                                        {intelligenceResult.channel === 'email' && intelligenceResult.subject && (
-                                                            <div className="mb-4 text-[10px] font-black text-white/40 uppercase tracking-widest">SUB: {intelligenceResult.subject}</div>
-                                                        )}
-                                                        <p className="text-base font-black text-white leading-relaxed whitespace-pre-wrap">
-                                                            {intelligenceResult.generatedMessage}
-                                                        </p>
-                                                        <div className="text-[8px] font-black text-white/50 mt-6 uppercase tracking-widest flex items-center justify-between">
-                                                            <span>Transmitted via {intelligenceResult.channel.charAt(0).toUpperCase() + intelligenceResult.channel.slice(1)}</span>
-                                                            <span className="px-2 py-1 bg-white/10 rounded flex items-center gap-1.5 block">
-                                                                <div className="w-1 h-1 rounded-full bg-emerald-400" />
-                                                                Live Delivery
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        </div>
-
-                        {/* Chat Input Layer */}
-                        <div className={`p-8 border-t transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-950/20 border-white/10' : 'bg-white border-zinc-200 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]'}`}>
-                            <div className="relative max-w-4xl mx-auto group">
-                                <div className="absolute inset-0 bg-blue-500/5 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-all duration-700" />
-                                <input
-                                    type="text"
-                                    placeholder="Dictate manual follow-up or add profile context..."
-                                    className={`relative w-full border rounded-[28px] py-6 pl-10 pr-24 text-base font-bold transition-all duration-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 shadow-2xl ${theme === 'dark' ? 'bg-[#0a0a0a] border-white/10 text-white placeholder:text-zinc-700' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-300'}`}
-                                />
-                                <button className="absolute right-3.5 top-1/2 -translate-y-1/2 w-14 h-14 bg-blue-500 text-white rounded-2xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 border-none group active:scale-95">
-                                    <Send size={24} className="transition-transform group-hover:translate-x-1" />
-                                </button>
-                            </div>
-                            <div className="mt-4 flex items-center justify-center gap-8 opacity-40 grayscale group-hover:grayscale-0 transition-all">
-                                <Search size={14} className="text-zinc-500" />
-                                <Mail size={14} className="text-zinc-500" />
-                                <Phone size={14} className="text-zinc-500" />
-                                <Activity size={14} className="text-zinc-500" />
-                            </div>
+                            ))}
                         </div>
                     </div>
-                )}
+                ))}
+            </div>
+        </div>
+    );
+};
 
-                {/* 📱 MOBILE NAVIGATION (Visible only on < md) */}
-                {!selectedLead && (
-                    <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[60] flex gap-2 p-1.5 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl">
-                        {[
-                            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                            { id: 'leads', icon: Users, label: 'Leads' }
-                        ].map((nav) => (
-                            <button
-                                key={nav.id}
-                                onClick={() => setActiveTab(nav.id)}
-                                className={`flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-all ${
-                                    activeTab === nav.id 
-                                        ? "bg-white/10 text-white shadow-inner" 
-                                        : "text-white/30 hover:text-white/60"
-                                }`}
-                            >
-                                <nav.icon size={16} />
-                                <span className="text-[9px] font-black uppercase tracking-widest">{nav.label}</span>
+const AutomationsView = () => (
+    <div className="space-y-3">
+        <div className="flex items-center justify-between">
+            <div>
+                <p style={{ fontSize:'8px', fontWeight:900, letterSpacing:'0.3em', color: T.amber }}>AUTOMATIONS</p>
+                <h2 className="font-black italic uppercase tracking-tighter text-base" style={{ color: T.text }}>Workflow Engine</h2>
+            </div>
+            <span className="px-2.5 py-1 rounded-full text-white flex items-center gap-1" style={{ background: 'rgba(245,158,11,0.15)', border:'1px solid rgba(245,158,11,0.3)', color: T.amber, fontSize:'8px', fontWeight:900 }}>
+                3 Active
+            </span>
+        </div>
+        {[
+            { name: 'New Lead → Welcome WhatsApp', trigger: 'Lead captured via widget', status: 'active', runs: '284', color: T.green },
+            { name: 'Score > 80 → Book Meeting', trigger: 'AI score threshold hit', status: 'active', runs: '42', color: T.green },
+            { name: 'Email Reply → CRM Update', trigger: 'Gmail integration event', status: 'active', runs: '178', color: T.green },
+        ].map((a, i) => (
+            <div key={i} className="p-4 rounded-2xl flex items-center gap-4" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+                <div className="w-2 h-2 rounded-full shrink-0 animate-pulse" style={{ background: T.green }} />
+                <div className="flex-1">
+                    <p style={{ fontSize:'11px', fontWeight:900, color: T.text }}>{a.name}</p>
+                    <p style={{ fontSize:'9px', color: T.textSec }}>{a.trigger}</p>
+                </div>
+                <div className="text-right">
+                    <p style={{ fontSize:'13px', fontWeight:900, color: a.color }}>{a.runs}</p>
+                    <p style={{ fontSize:'8px', color: T.textTer }}>runs today</p>
+                </div>
+                <div className="w-8 h-4 rounded-full relative" style={{ background: T.green }}>
+                    <div className="absolute top-0.5 right-0.5 w-3 h-3 rounded-full bg-white" />
+                </div>
+            </div>
+        ))}
+        {/* Locked advanced automations */}
+        <div className="p-4 rounded-2xl relative overflow-hidden" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+            <div className="absolute inset-0 flex items-center justify-center rounded-2xl backdrop-blur-sm z-10" style={{ background: 'rgba(10,10,10,0.7)' }}>
+                <div className="flex items-center gap-3">
+                    <Lock size={16} style={{ color: T.textSec }} />
+                    <span style={{ fontSize:'10px', fontWeight:900, color: T.textSec }}>Advanced automations — Upgrade to unlock</span>
+                    <button className="px-3 py-1 rounded-full text-white" style={{ background: T.blue, fontSize:'8px', fontWeight:900 }}>Upgrade →</button>
+                </div>
+            </div>
+            <p style={{ fontSize:'11px', color: T.text, opacity:0.3 }}>Multi-step nurture sequences, A/B testing, conditional logic...</p>
+        </div>
+    </div>
+);
+
+const AnalyticsView = () => (
+    <div className="space-y-3">
+        <div className="flex items-center justify-between">
+            <div>
+                <p style={{ fontSize:'8px', fontWeight:900, letterSpacing:'0.3em', color: T.green }}>ANALYTICS</p>
+                <h2 className="font-black italic uppercase tracking-tighter text-base" style={{ color: T.text }}>Performance Overview</h2>
+            </div>
+            <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl" style={{ border:`1px solid ${T.borderLight}`, fontSize:'9px', color:T.textSec }}>Last 30 days ▾</button>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+            {[
+                { label:'Total Leads', val:'2,355', delta:'+247', color:T.blue, spark:[8,10,9,12,11,14,13,15] },
+                { label:'Conversion Rate', val:'12.5%', delta:'+2.1%', color:T.green, spark:[9,10,8,11,10,12,11,13] },
+                { label:'AI Revenue', val:'₹24,064', delta:'+₹3.2k', color:T.violet, spark:[6,8,7,9,8,11,10,12] },
+            ].map((s,i)=>(
+                <div key={i} className="p-4 rounded-2xl" style={{ background:T.card, border:`1px solid ${T.border}` }}>
+                    <div className="flex items-start justify-between mb-2">
+                        <div>
+                            <p style={{ fontSize:'9px', color:T.textSec }}>{s.label}</p>
+                            <p className="text-lg font-black" style={{ color:T.text }}>{s.val}</p>
+                            <p className="font-bold" style={{ fontSize:'9px', color:s.color }}>{s.delta}</p>
+                        </div>
+                        <Sparkline data={s.spark} color={s.color} w={48} h={28} />
+                    </div>
+                </div>
+            ))}
+        </div>
+        <div className="p-4 rounded-2xl" style={{ background:T.card, border:`1px solid ${T.border}` }}>
+            <p className="mb-3 font-semibold" style={{ fontSize:'10px', color:T.textSec }}>Monthly Lead Volume</p>
+            <MiniBar values={[45,62,38,95,55,70,48,52,44,38,30,28]} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+            {[
+                { label:'Avg AI Response Time', val:'3s', sub:'vs 2h 15m manual', color:T.blue },
+                { label:'AI Win Rate', val:'28.5%', sub:'vs 11% manual team', color:T.green },
+            ].map((s,i)=>(
+                <div key={i} className="p-4 rounded-2xl" style={{ background:T.card, border:`1px solid ${T.border}` }}>
+                    <p style={{ fontSize:'9px', color:T.textSec }}>{s.label}</p>
+                    <p className="text-2xl font-black" style={{ color:s.color }}>{s.val}</p>
+                    <p style={{ fontSize:'9px', color:T.textTer }}>{s.sub}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
+// ── NAV ITEM ──────────────────────────────────────────────────────────────────
+const NavItem = ({ icon: Icon, label, badge, active, onClick }) => (
+    <button onClick={onClick} className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl transition-all text-left"
+        style={active ? { background: T.blue, color: '#fff' } : { color: T.textSec }}>
+        <div className="flex items-center gap-2.5">
+            <Icon size={13} strokeWidth={active ? 2.5 : 2} />
+            <span style={{ fontSize:'11px', fontWeight:600 }}>{label}</span>
+        </div>
+        {badge && <span className="text-white px-1.5 py-0.5 rounded-full" style={{ fontSize:'7px', fontWeight:900, background: T.blue }}>{badge}</span>}
+    </button>
+);
+
+// ── MAIN COMPONENT ─────────────────────────────────────────────────────────────
+const InteractiveHeroDemo = ({ initialTab }) => {
+    const [activeTab, setActiveTab] = useState(initialTab || 'dashboard');
+
+    const views = {
+        dashboard: <DashboardView />,
+        leads: <LeadsView />,
+        pipeline: <PipelineView />,
+        automations: <AutomationsView />,
+        analytics: <AnalyticsView />,
+    };
+
+    return (
+        <div className="relative w-full rounded-[1.25rem] md:rounded-[1.5rem] overflow-hidden flex select-none"
+            style={{ background: T.bg, border: `1px solid rgba(255,255,255,0.06)`, minHeight: '480px', maxHeight: '560px', boxShadow: '0 0 80px rgba(0,0,0,0.7)' }}>
+
+            {/* ── SIDEBAR — hidden on mobile, visible md+ */}
+            <div className="hidden md:flex flex-col w-[148px] shrink-0 pt-4 pb-3" style={{ background: T.sidebar, borderRight: `1px solid ${T.border}` }}>
+                {/* Logo */}
+                <div className="px-3.5 mb-5">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-white font-black" style={{ background: T.blue, fontSize:'10px' }}>N</div>
+                        <span className="font-black text-sm" style={{ color: T.text }}>NEXIO</span>
+                    </div>
+                    <span style={{ fontSize:'8px', color: T.textTer, fontWeight:600, marginLeft:'30px' }}>Sales Platform</span>
+                </div>
+
+                {/* Search */}
+                <div className="px-2.5 mb-3.5">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl" style={{ background:'rgba(255,255,255,0.04)', border:`1px solid ${T.border}` }}>
+                        <Search size={9} style={{ color: T.textTer }} />
+                        <span style={{ fontSize:'9px', color: T.textTer, fontWeight:500 }}>Search...</span>
+                    </div>
+                </div>
+
+                {/* Main Menu */}
+                <div className="px-2 mb-3">
+                    <p style={{ fontSize:'7px', fontWeight:900, letterSpacing:'0.2em', color: T.textTer, padding:'0 8px', marginBottom:'6px' }}>MAIN MENU</p>
+                    <div className="space-y-0.5">
+                        <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab==='dashboard'} onClick={() => setActiveTab('dashboard')} />
+                        <NavItem icon={Users} label="Leads" active={activeTab==='leads'} onClick={() => setActiveTab('leads')} />
+                        <NavItem icon={GitBranch} label="Pipeline" badge="AI" active={activeTab==='pipeline'} onClick={() => setActiveTab('pipeline')} />
+                        <NavItem icon={Zap} label="Automations" active={activeTab==='automations'} onClick={() => setActiveTab('automations')} />
+                        <NavItem icon={BarChart2} label="Analytics" active={activeTab==='analytics'} onClick={() => setActiveTab('analytics')} />
+                        <NavItem icon={Link2} label="Integrations" active={false} onClick={() => {}} />
+                    </div>
+                </div>
+
+                {/* Tools */}
+                <div className="px-2 mb-3">
+                    <p style={{ fontSize:'7px', fontWeight:900, letterSpacing:'0.2em', color: T.textTer, padding:'0 8px', marginBottom:'6px' }}>TOOLS</p>
+                    <div className="space-y-0.5">
+                        <NavItem icon={Bell} label="Notifications" active={false} onClick={() => {}} />
+                        <NavItem icon={MessageSquare} label="WhatsApp Bot" active={false} onClick={() => {}} />
+                        <NavItem icon={Settings} label="Settings" active={false} onClick={() => {}} />
+                    </div>
+                </div>
+
+                {/* Active Product */}
+                <div className="px-2.5 mt-auto">
+                    <div className="p-2 rounded-xl mb-2" style={{ background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)' }}>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                            <div className="w-5 h-5 rounded-md flex items-center justify-center text-white" style={{ background:T.blue, fontSize:'8px' }}><LayoutDashboard size={9}/></div>
+                            <span style={{ fontSize:'9px', fontWeight:900, color:T.text }}>NEXIO CRM</span>
+                            <span className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse" style={{ background:'#60a5fa' }}/>
+                        </div>
+                        <span style={{ fontSize:'8px', color:'rgba(96,165,250,0.7)', fontWeight:700, marginLeft:'26px' }}>Sales Automation</span>
+                    </div>
+                    <button className="w-full py-1.5 rounded-xl text-white font-black text-[9px] uppercase tracking-widest" style={{ background: T.blue, boxShadow:'0 4px 12px rgba(59,130,246,0.3)' }}>
+                        Upgrade Plan →
+                    </button>
+                </div>
+            </div>
+
+            {/* ── MAIN CONTENT */}
+            <div className="flex-1 flex flex-col overflow-hidden" style={{ minWidth: 0 }}>
+                {/* Top bar */}
+                <div className="flex items-center justify-between px-4 md:px-5 py-3 shrink-0" style={{ borderBottom:`1px solid ${T.border}` }}>
+                    {/* Mobile tab selector */}
+                    <div className="flex md:hidden items-center gap-1 overflow-x-auto" style={{ scrollbarWidth:'none' }}>
+                        {[{k:'dashboard',l:'Home',I:LayoutDashboard},{k:'leads',l:'Leads',I:Users},{k:'pipeline',l:'Pipeline',I:GitBranch},{k:'automations',l:'Automations',I:Zap},{k:'analytics',l:'Analytics',I:BarChart2}].map(({k,l,I})=>(
+                            <button key={k} onClick={()=>setActiveTab(k)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl shrink-0 transition-all"
+                                style={activeTab===k ? {background:T.blue,color:'#fff',fontSize:'9px',fontWeight:900} : {background:'rgba(255,255,255,0.04)',color:T.textSec,fontSize:'9px'}}>
+                                <I size={10}/>{l}
                             </button>
                         ))}
                     </div>
-                )}
-            </div>
+                    <span className="hidden md:block font-black text-sm" style={{ color: T.text }}>
+                        {{dashboard:'Dashboard',leads:'Leads Central',pipeline:'Deal Pipeline',automations:'Workflow Engine',analytics:'Analytics'}[activeTab]}
+                    </span>
+                    <div className="flex items-center gap-2 ml-auto">
+                        <button className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-bold" style={{ border:`1px solid ${T.borderLight}`, fontSize:'9px', color:T.textSec }}>
+                            <Plus size={9}/> Widget
+                        </button>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-black" style={{ background:T.blue, fontSize:'10px' }}>H</div>
+                    </div>
+                </div>
 
-            <style dangerouslySetInnerHTML={{ __html: `
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.1); border-radius: 10px; }
-            `}} />
+                {/* View content */}
+                <div className="flex-1 overflow-y-auto p-3 md:p-4" style={{ scrollbarWidth:'none' }}>
+                    <AnimatePresence mode="wait">
+                        <motion.div key={activeTab} initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} transition={{ duration:0.2 }}>
+                            {views[activeTab]}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </div>
         </div>
     );
 };

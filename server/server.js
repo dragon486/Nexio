@@ -11,20 +11,13 @@ import logger from "./src/utils/logger.js";
 import fs from 'fs';
 import path from 'path';
 
+// ... existing logger setup ...
+
 const PORT = runtimeConfig.port || 8080;
 const server = createServer(app);
-let flushInterval;
-
 const startServer = async () => {
-    // Validate environment before boot
-    validateRuntimeConfig();
-    const warnings = getRuntimeWarnings();
-    if (warnings.length > 0) {
-        logger.warn("⚠️ [Bootstrap] Environment Warnings detected:", warnings);
-    }
-
     await connectDB();
- 
+
     await initSocket(server);
     initEmailSyncService();
 
@@ -52,7 +45,7 @@ const shutdown = async (signal) => {
     logger.warn(`[Shutdown] Received ${signal}. Draining services...`);
 
     if (flushInterval) clearInterval(flushInterval);
-    
+
     // Final defensive flush
     await metricsService.flushToMongo();
 
