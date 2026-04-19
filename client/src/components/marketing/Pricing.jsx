@@ -7,27 +7,27 @@ import GlassCard from '../ui/GlassCard';
 
 const plans = [
     {
-        name: "Founder Starter",
+        name: "Starter",
         price: "₹2,999",
-        description: "Perfect for early adopters and small shops.",
+        description: "Perfect for small businesses just getting started with AI sales.",
         features: ["1 WhatsApp AI Bot", "500 Conversations / month", "Standard AI Personality", "Lead Scoring & CRM", "7-Day History"],
-        cta: "Start Scaling",
+        cta: "Get Started",
         popular: false
     },
     {
-        name: "Pro Intelligence",
+        name: "Pro",
         price: "₹14,999",
-        description: "For scaling growth-led businesses.",
-        features: ["1 WhatsApp AI Bot", "2,500 Conversations / month", "Custom AI Tone & Knowledge", "Revenue Forecasting", "Full History + Data Export", "Priority Support"],
-        cta: "Initiate Growth Sync",
+        description: "For growing businesses that want to scale their sales with AI.",
+        features: ["1 WhatsApp AI Bot", "2,500 Conversations / month", "Custom AI Tone & Knowledge Base", "Revenue Forecasting", "Full History + Data Export", "Priority Support"],
+        cta: "Get Started",
         popular: true
     },
     {
         name: "Enterprise",
-        price: "₹25,000",
-        description: "For high-volume sales teams.",
+        price: "Custom",
+        description: "For high-volume sales teams with advanced requirements.",
         features: ["Unlimited AI Bots", "Unlimited Conversations", "Custom API Integrations", "Call AI & Transcription", "Dedicated Account Manager", "White-label Dashboard"],
-        cta: "Request Consultation",
+        cta: "Contact Us",
         popular: false
     }
 ];

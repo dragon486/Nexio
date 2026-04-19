@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { Mail, ArrowLeft, CheckCircle, ShieldQuestion, ArrowRight } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle, Lock, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ForgotPassword = () => {
@@ -44,13 +44,13 @@ const ForgotPassword = () => {
             >
                 <div className="mb-10 text-center">
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-white/5 border border-white/10 shadow-inner">
-                        <ShieldQuestion size={32} style={{ color: 'var(--accent-blue)' }} />
+                        <Lock size={32} style={{ color: 'var(--accent-blue)' }} />
                     </div>
-                    <h1 className="text-3xl font-black italic tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
-                        RECOVERY
+                    <h1 className="text-3xl font-black tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
+                        Forgot Password
                     </h1>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-tertiary)' }}>
-                        Restore Access Hierarchy
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                        Enter your email and we'll send you a reset link.
                     </p>
                 </div>
 
@@ -64,45 +64,45 @@ const ForgotPassword = () => {
                         >
                             <div className="p-6 rounded-2xl border bg-emerald-500/5" style={{ borderColor: 'rgba(16,185,129,0.2)' }}>
                                 <CheckCircle size={40} className="mx-auto mb-4 text-emerald-500" />
-                                <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>Protocol Initiated</h3>
-                                <p className="text-[11px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                                    A high-priority recovery link has been dispatched to <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>. Please check your inbox.
+                                <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>Check your inbox</h3>
+                                <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                                    We've sent a password reset link to <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>. It expires in 1 hour.
                                 </p>
                             </div>
-                            <Link 
-                                to="/login" 
-                                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 px-6 py-3 rounded-xl"
+                            <Link
+                                to="/login"
+                                className="inline-flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 active:scale-95 px-6 py-3 rounded-xl"
                                 style={{ background: 'var(--accent-blue)', color: '#fff' }}
                             >
-                                <ArrowLeft size={14} /> Resume Authentication
+                                <ArrowLeft size={14} /> Back to Login
                             </Link>
                         </motion.div>
                     ) : (
-                        <motion.form 
+                        <motion.form
                             key="form"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            onSubmit={handleSubmit} 
+                            onSubmit={handleSubmit}
                             className="space-y-6"
                         >
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Account Email</label>
+                                <label className="text-xs font-bold uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Email Address</label>
                                 <div className="relative group">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" size={16} style={{ color: 'var(--text-tertiary)' }} />
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:outline-none transition-all border shadow-inner"
+                                        className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:outline-none transition-all border shadow-inner"
                                         style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                                        placeholder="operator@nexus.ai"
+                                        placeholder="you@example.com"
                                         required
                                     />
                                 </div>
                             </div>
 
                             {status === 'error' && (
-                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-bold text-red-400 text-center animate-shake">
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-bold text-red-400 text-center">
                                     {errorMessage}
                                 </div>
                             )}
@@ -111,22 +111,22 @@ const ForgotPassword = () => {
                                 <button
                                     type="submit"
                                     disabled={status === 'loading'}
-                                    className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-2xl"
+                                    className="w-full h-14 rounded-2xl font-bold text-sm transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-2xl"
                                     style={{ background: 'var(--accent-blue)', color: '#ffffff', boxShadow: '0 10px 30px rgba(59,130,246,0.3)' }}
                                 >
-                                    {status === 'loading' ? 'PROCESSING...' : (
+                                    {status === 'loading' ? 'Sending...' : (
                                         <>
-                                            SEND RECOVERY LINK <ArrowRight size={14} />
+                                            Send Reset Link <ArrowRight size={14} />
                                         </>
                                     )}
                                 </button>
-                                
-                                <Link 
-                                    to="/login" 
-                                    className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all hover:opacity-70 pt-2"
+
+                                <Link
+                                    to="/login"
+                                    className="flex items-center justify-center gap-2 text-sm font-medium transition-all hover:opacity-70 pt-2"
                                     style={{ color: 'var(--text-secondary)' }}
                                 >
-                                    Cancel & Return
+                                    <ArrowLeft size={14} /> Back to Login
                                 </Link>
                             </div>
                         </motion.form>
