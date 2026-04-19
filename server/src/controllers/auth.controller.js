@@ -223,19 +223,25 @@ export const forgotPassword = async (req, res) => {
         await user.save();
 
         // Send Email
-        const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
-        const subject = "Password Reset Request";
-        const body = `
-            <p>You requested a password reset.</p>
-            <p>Please click the link below to reset your password:</p>
-            <a href="${resetUrl}">${resetUrl}</a>
-            <p>If you didn't request this, please ignore this email.</p>
-        `;
+        try {
+            const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+            const subject = "Password Reset Request";
+            const body = `
+                <p>You requested a password reset.</p>
+                <p>Please click the link below to reset your password:</p>
+                <a href="${resetUrl}">${resetUrl}</a>
+                <p>If you didn't request this, please ignore this email.</p>
+            `;
 
-        await sendEmail(email, subject, body);
-        res.json({ message: "Reset link sent to email" });
+            await sendEmail(email, subject, body);
+            res.json({ message: "Reset link sent to email" });
+        } catch (mailError) {
+            console.error("❌ Forgot Password Email Failed:", mailError);
+            res.status(500).json({ error: "Failed to send recovery email. Please contact support or try again later. " + (mailError.message || "") });
+        }
 
     } catch (error) {
+        console.error("🔴 Forgot Password Controller Error:", error);
         res.status(500).json({ error: error.message });
     }
 };

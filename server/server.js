@@ -1,3 +1,4 @@
+import './src/config/polyfills.js';
 import 'dotenv/config';
 import { createServer } from "http";
 import mongoose from "mongoose";
@@ -15,6 +16,7 @@ import path from 'path';
 
 const PORT = runtimeConfig.port || 8080;
 const server = createServer(app);
+let flushInterval;
 const startServer = async () => {
     await connectDB();
 

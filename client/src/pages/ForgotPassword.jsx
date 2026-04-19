@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
-import Button from '../components/ui/Button';
 import api from '../services/api';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Mail, ArrowLeft, CheckCircle, ShieldQuestion, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -21,74 +19,120 @@ const ForgotPassword = () => {
             setStatus('success');
         } catch (error) {
             setStatus('error');
-            setErrorMessage(error.response?.data?.message || 'Something went wrong. Please try again.');
+            const serverMessage = error.response?.data?.message || error.response?.data?.error;
+            setErrorMessage(serverMessage || 'Something went wrong. Please check your connection or try again.');
         }
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Professional Background Elements */}
+        <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+            {/* Ambient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/10 blur-[180px] rounded-full animate-pulse-slow" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#10b981]/10 blur-[180px] rounded-full animate-pulse-slow" />
+                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-10 blur-[120px]" style={{ background: 'var(--accent-blue)' }} />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-10 blur-[120px]" style={{ background: 'var(--success-green)' }} />
             </div>
 
-            <div className="w-full max-w-md relative z-10 p-10 bg-white/80 dark:bg-[#1a1a1a]/95 backdrop-blur-2xl rounded-[24px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border border-[#e5e7eb] dark:border-[#2a2a2a] transition-all duration-500">
-                <Link to="/login" className="inline-flex items-center text-[10px] font-black text-[#64748b] dark:text-[#94a3b8] hover:text-[#3b82f6] transition-all mb-8 group uppercase tracking-[0.2em]">
-                    <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Authorization
-                </Link>
-
-                <div className="mb-10">
-                    <h1 className="text-4xl font-black text-[#0f172a] dark:text-[#f8fafc] italic tracking-tight mb-3">RECOVERY</h1>
-                    <p className="text-[#64748b] dark:text-[#94a3b8] text-xs font-bold leading-relaxed uppercase tracking-wider">Initialize credential restoration sequence.</p>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="w-full max-w-md relative z-10 p-8 md:p-12 backdrop-blur-3xl rounded-[32px] overflow-hidden"
+                style={{
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                }}
+            >
+                <div className="mb-10 text-center">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-white/5 border border-white/10 shadow-inner">
+                        <ShieldQuestion size={32} style={{ color: 'var(--accent-blue)' }} />
+                    </div>
+                    <h1 className="text-3xl font-black italic tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
+                        RECOVERY
+                    </h1>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-tertiary)' }}>
+                        Restore Access Hierarchy
+                    </p>
                 </div>
 
-                {status === 'success' ? (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-xl p-8 text-center"
-                    >
-                        <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle size={32} className="text-green-500" />
-                        </div>
-                        <h3 className="text-foreground font-bold text-lg mb-2">Check your inbox</h3>
-                        <p className="text-sm text-muted-foreground font-medium">We've sent a recovery link to <strong className="text-foreground">{email}</strong>.</p>
-                    </motion.div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Account Email</label>
-                            <div className="relative group">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
-                                    placeholder="operator@nexus.ai"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {status === 'error' && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
-                                {errorMessage}
-                            </div>
-                        )}
-
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none"
-                            disabled={status === 'loading'}
+                <AnimatePresence mode="wait">
+                    {status === 'success' ? (
+                        <motion.div
+                            key="success"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-center space-y-6"
                         >
-                            {status === 'loading' ? 'PROCESSING...' : 'SEND RECOVERY LINK'}
-                        </Button>
-                    </form>
-                )}
-            </div>
+                            <div className="p-6 rounded-2xl border bg-emerald-500/5" style={{ borderColor: 'rgba(16,185,129,0.2)' }}>
+                                <CheckCircle size={40} className="mx-auto mb-4 text-emerald-500" />
+                                <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>Protocol Initiated</h3>
+                                <p className="text-[11px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                                    A high-priority recovery link has been dispatched to <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>. Please check your inbox.
+                                </p>
+                            </div>
+                            <Link 
+                                to="/login" 
+                                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 px-6 py-3 rounded-xl"
+                                style={{ background: 'var(--accent-blue)', color: '#fff' }}
+                            >
+                                <ArrowLeft size={14} /> Resume Authentication
+                            </Link>
+                        </motion.div>
+                    ) : (
+                        <motion.form 
+                            key="form"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            onSubmit={handleSubmit} 
+                            className="space-y-6"
+                        >
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Account Email</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" size={16} style={{ color: 'var(--text-tertiary)' }} />
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:outline-none transition-all border shadow-inner"
+                                        style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                        placeholder="operator@nexus.ai"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {status === 'error' && (
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-bold text-red-400 text-center animate-shake">
+                                    {errorMessage}
+                                </div>
+                            )}
+
+                            <div className="space-y-4 pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={status === 'loading'}
+                                    className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-2xl"
+                                    style={{ background: 'var(--accent-blue)', color: '#ffffff', boxShadow: '0 10px 30px rgba(59,130,246,0.3)' }}
+                                >
+                                    {status === 'loading' ? 'PROCESSING...' : (
+                                        <>
+                                            SEND RECOVERY LINK <ArrowRight size={14} />
+                                        </>
+                                    )}
+                                </button>
+                                
+                                <Link 
+                                    to="/login" 
+                                    className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all hover:opacity-70 pt-2"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                >
+                                    Cancel & Return
+                                </Link>
+                            </div>
+                        </motion.form>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </div>
     );
 };

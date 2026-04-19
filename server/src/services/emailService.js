@@ -15,19 +15,29 @@ const transporter = nodemailer.createTransport({
 
 const sendViaSmtp = async (to, subject, html) => {
     if (!runtimeConfig.smtp.user || runtimeConfig.smtp.user === "user@example.com" || !runtimeConfig.smtp.pass) {
-        console.warn("⚠️ [EmailService] Default SMTP not configured. Skipping email.");
+        console.warn("⚠️ [EmailService] SMTP credentials missing or invalid in .env. Skipping email dispatch.");
         return null;
     }
 
-    const info = await transporter.sendMail({
-        from: runtimeConfig.smtp.from,
-        to,
-        subject,
-        html,
-    });
+    try {
+        console.log(`📧 [EmailService] Dispatching SMTP email to: ${to} via ${runtimeConfig.smtp.host}:${runtimeConfig.smtp.port}...`);
+        const info = await transporter.sendMail({
+            from: runtimeConfig.smtp.from,
+            to,
+            subject,
+            html,
+        });
 
-    console.log("📧 [EmailService] System SMTP Email sent successfully: %s", info.messageId);
-    return { ...info, provider: "smtp" };
+        console.log("✅ [EmailService] SMTP Email sent: %s", info.messageId);
+        return { ...info, provider: "smtp" };
+    } catch (smtpError) {
+        console.error("❌ [EmailService] SMTP Transport Error:");
+        console.error("   - Host:", runtimeConfig.smtp.host);
+        console.error("   - Port:", runtimeConfig.smtp.port);
+        console.error("   - User:", runtimeConfig.smtp.user);
+        console.error("   - Details:", smtpError.message || smtpError);
+        throw new Error(`Email delivery failed: ${smtpError.message}`);
+    }
 };
 
 export const sendEmail = async (to, subject, html, userId = null) => {

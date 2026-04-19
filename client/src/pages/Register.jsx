@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { GoogleLogin } from '@react-oauth/google';
 import Button from '../components/ui/Button';
-import { register } from '../services/authService';
-import { Building2, Lock, Mail, User } from 'lucide-react';
+import { register, googleLogin } from '../services/authService';
+import { Building2, Lock, Mail, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Register = () => {
     const [name, setName] = useState('');
     const [businessName, setBusinessName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -25,14 +27,13 @@ const Register = () => {
                 localStorage.setItem('user', JSON.stringify(response.user));
                 navigate('/onboarding');
             } else {
-                // Handle cases where registration is successful but no token is returned,
-                // or if the response structure is different.
                 setError(response.message || 'Registration successful, but no token received.');
             }
         } catch (err) {
             setError(
                 err.response?.data?.errors?.[0]?.message ||
                 err.response?.data?.message ||
+                err.response?.data?.error ||
                 'Registration failed'
             );
         } finally {
@@ -40,77 +41,120 @@ const Register = () => {
         }
     };
 
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setError('');
+        setLoading(true);
+        try {
+            const data = await googleLogin(credentialResponse.credential);
+            if (data.isNewUser) {
+                navigate('/onboarding');
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || err.response?.data?.error || 'Registration sequence failure. Access denied.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Professional Background Elements */}
+        <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+            {/* Ambient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/10 blur-[180px] rounded-full animate-pulse-slow" />
-                <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#10b981]/10 blur-[180px] rounded-full animate-pulse-slow" />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-20 blur-[120px]" style={{ background: 'var(--accent-blue)' }} />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-10 blur-[120px]" style={{ background: 'var(--success-green)' }} />
             </div>
 
-            <div className="fixed top-8 left-8 z-20">
-                <Link to="/" className="flex items-center gap-2 text-xs font-black text-muted-foreground hover:text-primary transition-all uppercase tracking-widest group">
-                    <span className="w-8 h-8 rounded-full bg-surface-soft border border-border/10 flex items-center justify-center group-hover:-translate-x-1 transition-transform">←</span>
-                    Return to Mission Control
+            {/* Back Home */}
+            <div className="fixed top-8 left-8 z-20 hidden md:block">
+                <Link to="/" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all hover:opacity-70" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="w-8 h-8 rounded-full flex items-center justify-center border transition-all" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>←</span>
+                    Mission Control
                 </Link>
             </div>
 
-            <div className="w-full max-w-md relative z-10 p-10 bg-white/80 dark:bg-[#1a1a1a]/95 backdrop-blur-2xl rounded-[24px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] border border-[#e5e7eb] dark:border-[#2a2a2a] transition-all duration-500">
-                <div className="text-center mb-12">
-                    <h1 className="text-6xl font-black text-[#0f172a] dark:text-[#f8fafc] italic tracking-[-0.05em] mb-3 select-none">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-lg relative z-10 p-8 md:p-12 backdrop-blur-3xl rounded-[32px] overflow-hidden"
+                style={{
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                }}
+            >
+                <div className="text-center mb-10">
+                    <motion.h1 
+                        initial={{ scale: 0.95 }}
+                        animate={{ scale: 1 }}
+                        className="text-5xl font-black italic tracking-tighter mb-4" 
+                        style={{ color: 'var(--text-primary)' }}
+                    >
                         NEXIO
-                    </h1>
-                    <div className="flex items-center justify-center gap-3">
-                        <div className="h-[1.5px] w-10 bg-gradient-to-r from-transparent via-[#3b82f6]/30 to-transparent" />
-                        <p className="text-[10px] text-[#3b82f6] font-black uppercase tracking-[0.4em] drop-shadow-sm">Initialize Hub</p>
-                        <div className="h-[1.5px] w-10 bg-gradient-to-r from-transparent via-[#3b82f6]/30 to-transparent" />
+                    </motion.h1>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border bg-white/5" style={{ borderColor: 'var(--border)' }}>
+                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--success-green)' }} />
+                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'var(--success-green)' }}>Initialize New Instance</span>
                     </div>
                 </div>
 
-                {error && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm text-center">
-                        {error}
-                    </div>
-                )}
+                <AnimatePresence mode="wait">
+                    {error && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mb-6 p-4 rounded-2xl text-xs text-center font-bold tracking-wide border" 
+                            style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444' }}
+                        >
+                            {error}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Full Name</label>
-                        <div className="relative group">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
-                            <input
-                                type="text"
-                                className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
-                                placeholder="Adele Muhammed"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Operator Name</label>
+                            <div className="relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" size={16} style={{ color: 'var(--text-tertiary)' }} />
+                                <input
+                                    type="text"
+                                    className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:outline-none transition-all border"
+                                    style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                    placeholder="Adele Muhammed"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Business Entity</label>
+                            <div className="relative group">
+                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" size={16} style={{ color: 'var(--text-tertiary)' }} />
+                                <input
+                                    type="text"
+                                    className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:outline-none transition-all border"
+                                    style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                    placeholder="Quantum Corp"
+                                    value={businessName}
+                                    onChange={(e) => setBusinessName(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Business Name</label>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Primary Node / Email</label>
                         <div className="relative group">
-                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
-                            <input
-                                type="text"
-                                className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
-                                placeholder="Quantum Corp"
-                                value={businessName}
-                                onChange={(e) => setBusinessName(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Email Address</label>
-                        <div className="relative group">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" size={16} style={{ color: 'var(--text-tertiary)' }} />
                             <input
                                 type="email"
-                                className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
+                                className="w-full rounded-2xl py-4 pl-12 pr-4 text-sm font-bold focus:outline-none transition-all border"
+                                style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                 placeholder="operator@nexus.ai"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -119,32 +163,80 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Password</label>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-tertiary)' }}>Access Key / Password</label>
                         <div className="relative group">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-amber-500 transition-colors" size={18} />
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors" size={16} style={{ color: 'var(--text-tertiary)' }} />
                             <input
-                                type="password"
-                                className="w-full bg-[#fafafa] dark:bg-[#0f0f0f] border border-[#e5e7eb] dark:border-[#2a2a2a] rounded-xl py-3.5 pl-11 pr-4 text-[#0f172a] dark:text-[#f8fafc] placeholder:text-[#94a3b8]/40 focus:outline-none focus:ring-4 focus:ring-[#3b82f6]/10 focus:border-[#3b82f6]/50 transition-all font-bold text-sm shadow-inner"
+                                type={showPassword ? "text" : "password"}
+                                className="w-full rounded-2xl py-4 pl-12 pr-12 text-sm font-bold focus:outline-none transition-all border"
+                                style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 transition-all hover:scale-110"
+                                style={{ color: 'var(--text-tertiary)' }}
+                            >
+                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
                         </div>
                     </div>
 
-                    <Button type="submit" disabled={loading} className="w-full h-14 bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] border-none disabled:opacity-50 disabled:cursor-not-allowed">
-                        {loading ? 'INITIALIZING...' : 'START FREE TRIAL'}
-                    </Button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-2xl"
+                        style={{ background: 'var(--accent-blue)', color: '#ffffff', boxShadow: '0 10px 30px rgba(59,130,246,0.3)' }}
+                    >
+                        {loading ? 'INITIALIZING...' : (
+                            <>
+                                START FREE RUN <ArrowRight size={14} />
+                            </>
+                        )}
+                    </button>
                 </form>
 
-                <div className="mt-8 text-center text-[11px] font-bold uppercase tracking-widest space-y-4">
-                    <p className="text-[#64748b] dark:text-[#94a3b8]">
-                        ALREADY OPERATING? <Link to="/login" className="text-[#3b82f6] hover:text-[#2563eb] transition-all underline underline-offset-4 decoration-2 font-black">SIGN IN</Link>
+                {/* Divider */}
+                <div className="relative my-10">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full h-[1px]" style={{ background: 'var(--border)' }} />
+                    </div>
+                    <div className="relative flex justify-center">
+                        <span className="px-4 text-[9px] uppercase font-black tracking-widest" style={{ background: 'var(--bg-secondary)', color: 'var(--text-tertiary)' }}>
+                            Rapid Provisioning
+                        </span>
+                    </div>
+                </div>
+
+                {/* Google Sign-up integration */}
+                <div className="flex justify-center mb-10 group transition-all hover:scale-[1.02]">
+                    <div className="w-full max-w-[240px]">
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={() => setError('Google sign-up failed. Please try again.')}
+                            theme="outline"
+                            shape="circle"
+                            text="signup_with"
+                            size="large"
+                            width="240px"
+                        />
+                    </div>
+                </div>
+
+                <div className="text-center pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                    <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>
+                        ALREADY OPERATING?{' '}
+                        <Link to="/login" className="font-black underline underline-offset-4 decoration-2 px-1" style={{ color: 'var(--accent-blue)' }}>
+                            SIGN IN
+                        </Link>
                     </p>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

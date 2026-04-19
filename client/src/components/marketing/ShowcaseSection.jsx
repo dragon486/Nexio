@@ -272,25 +272,29 @@ const ShowcaseSection = () => {
                                             {/* Lead Message */}
                                             <motion.div 
                                                 style={{ scale: useTransform(smoothProgress, [0.48, 0.52], [0.8, 1]), opacity: useTransform(smoothProgress, [0.48, 0.52], [0, 1]) }}
-                                                className="bg-zinc-800/80 p-4 rounded-2xl rounded-tl-none mr-8 text-left"
+                                                className="bg-zinc-800/90 border border-white/5 p-4 rounded-2xl rounded-tl-none mr-8 text-left shadow-xl"
                                             >
-                                                <p className="text-[11px] font-medium text-zinc-300">Is this for Enterprise? How much do you charge for 500 agents?</p>
+                                                <p className="text-[11px] font-bold text-zinc-100">Is this for Enterprise? How much do you charge for 500 agents?</p>
                                                 <div className="text-[8px] text-zinc-500 mt-2 font-mono uppercase tracking-widest text-right">LEAD • 12:04PM</div>
                                             </motion.div>
 
                                             {/* AI NEXIO Automated Message */}
                                             <motion.div 
                                                 style={{ scale: useTransform(smoothProgress, [0.55, 0.6], [0.8, 1]), opacity: useTransform(smoothProgress, [0.55, 0.6], [0, 1]) }}
-                                                className="bg-primary p-4 rounded-2xl rounded-tr-none ml-8 text-left shadow-[0_10px_40px_rgba(59,130,246,0.3)]"
+                                                className="bg-blue-600 p-4 rounded-2xl rounded-tr-none ml-8 text-left shadow-[0_20px_40px_rgba(37,99,235,0.25)] border border-blue-400/20"
                                             >
                                                 <p className="text-[11px] font-black text-white leading-relaxed">NEXIO AI: Hi Dynamic Retail! Yes, we specialize in high-capacity enterprise clusters. For 500+ agents, we offer bespoke scaling. Would you like our Founder, Adel, to share the tier pricing on WhatsApp?</p>
                                                 <div className="text-[8px] text-white/50 mt-2 font-mono uppercase tracking-widest text-right">AUTONOMOUS AGENT • JUST NOW</div>
                                             </motion.div>
                                         </div>
 
-                                        <div className="h-10 bg-black/40 rounded-xl mt-4 flex items-center px-4 justify-between border border-white/5">
-                                            <div className="text-[9px] text-zinc-600 font-black uppercase">NEXIO AI is typing...</div>
-                                            <Send size={12} className="text-zinc-600" />
+                                        <div className="h-10 bg-zinc-900/80 rounded-xl mt-4 flex items-center px-4 justify-between border border-white/5">
+                                            <div className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">NEXIO AI is typing...</div>
+                                            <div className="flex gap-1.5">
+                                                <div className="w-1 h-1 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                                <div className="w-1 h-1 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                                <div className="w-1 h-1 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
