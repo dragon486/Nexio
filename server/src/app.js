@@ -41,7 +41,12 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: runtimeConfig.clientUrl,
+    origin: [
+        runtimeConfig.clientUrl,
+        'https://nexio-iota.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000',
+    ],
     credentials: true,
 }));
 app.use(express.json());
